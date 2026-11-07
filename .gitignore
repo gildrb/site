@@ -4,7 +4,7 @@ node_modules/
 dist/
 .wrangler/
 # The built site as Bend: `npm run laws` writes it from dist/.
-/site/
+/build/
 autoresearch*
 doctor.config.json
 

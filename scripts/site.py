@@ -1,19 +1,30 @@
-"""Writes site/site.bend: the site as `vp build` ships it, for the laws (LAWS.bend).
+"""Writes build/site.bend: the site as `vp build` ships it, for the laws (LAWS.bend).
 
     python3 scripts/site.py
 
-Reads dist/: every .html file, and .well-known/poppy.json. Writes each file's text, byte for
-byte, as Bend strings of at most 3,000 characters (a longer literal overflows
-`bend PROOF.bend --verdict`). The laws read nothing else; this script is the one link they
-trust between dist/ and Bend.
+Reads dist/: every .html file (Site.pages), the text files the laws read (Site.files: FILES and
+every content/*.md, each only when dist/ has it), and the path of every file (Site.paths). Writes
+each file's text, byte for byte, as Bend strings of at most 3,000 characters (a longer literal
+overflows `bend PROOF.bend --verdict`). The laws read nothing else; this script is the one link
+they trust between dist/ and Bend.
 """
 
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
-OUT = ROOT / "site/site.bend"
-FILES = [".well-known/poppy.json"]
+OUT = ROOT / "build/site.bend"
+FILES = [
+    ".well-known/llms.txt",
+    ".well-known/poppy.json",
+    "_headers",
+    "_redirects",
+    "index.html.md",
+    "llms-full.txt",
+    "llms.txt",
+    "robots.txt",
+    "sitemap.xml",
+]
 PIECE = 3000
 
 
@@ -46,20 +57,33 @@ def text_def(name: str, path: str, text: str) -> str:
 
 def table(name: str, entries: list[tuple[str, str]]) -> str:
     rows = ",\n".join(f"    Out{{{literal(path)}, Site.{key}()}}" for path, key in entries)
-    return f"def Site.{name}() -> List<&2, Out>:\n  [\n{rows}\n  ]\n"
+    items = f"[\n{rows}\n  ]" if entries else "[]"
+    return f"def Site.{name}() -> List<&2, Out>:\n  {items}\n"
+
+
+def path_list(paths: list[str]) -> str:
+    """Ten paths a line: the file stays within 1,000 lines (laws/ layout rule)."""
+    lines = [", ".join(literal(path) for path in paths[i : i + 10]) for i in range(0, len(paths), 10)]
+    rows = ",\n".join(f"    {line}" for line in lines)
+    return f"def Site.paths() -> List<&2, String>:\n  [\n{rows}\n  ]\n"
 
 
 def main() -> None:
-    pages = sorted(path.relative_to(DIST).as_posix() for path in DIST.rglob("*.html"))
+    paths = sorted(path.relative_to(DIST).as_posix() for path in DIST.rglob("*") if path.is_file())
+    pages = [path for path in paths if path.endswith(".html")]
     if not pages:
         raise SystemExit("dist/ holds no HTML page: run `vp build` first")
+    files = sorted(
+        {path for path in FILES if (DIST / path).is_file()}
+        | {path for path in paths if path.startswith("content/") and path.count("/") == 1 and path.endswith(".md")}
+    )
     defs = []
     page_keys = []
     for index, path in enumerate(pages):
         defs.append(text_def(f"p{index}", path, (DIST / path).read_text(encoding="utf-8")))
         page_keys.append((path, f"p{index}"))
     file_keys = []
-    for index, path in enumerate(FILES):
+    for index, path in enumerate(files):
         defs.append(text_def(f"f{index}", path, (DIST / path).read_text(encoding="utf-8")))
         file_keys.append((path, f"f{index}"))
     OUT.parent.mkdir(exist_ok=True)
@@ -77,8 +101,10 @@ def main() -> None:
         + "\n".join(defs)
         + "\n# every HTML page, in path order\n"
         + table("pages", page_keys)
-        + "\n# every other file the laws read\n"
-        + table("files", file_keys),
+        + "\n# every other file the laws read, in path order\n"
+        + table("files", file_keys)
+        + "\n# the path of every file in dist/, in order\n"
+        + path_list(paths),
         encoding="utf-8",
     )
 

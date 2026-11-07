@@ -1,24 +1,36 @@
 {
   "laws": {
-    "laws/site/agents.bend::poppy": "1a085892287f2cf036388b834fcce1bfd180d595d8b8013a1a52f08ded86ec5d",
-    "laws/site/home/groups.bend::groups": "34a83a0f90becd2bb4a4ad082d5a6cf6712c8c98e32c18c267f5c8b988acec72",
-    "laws/site/home/rows.bend::rows": "5e0c10b874403f82db110a603b4f4b9dd2cdd8c7db474e1a9d0249224e8dbdf7",
-    "laws/site/home/text.bend::home_shown": "447e34597c3b959ad4e1d8448cca2d35f889fb6af5e6cf90d3fb330e0cc67013",
-    "laws/site/home/text.bend::home_text": "574243b8e3a2e63e02a5922c835639ea058ea4557da9aa7bb7e874f231bd8345",
-    "laws/site/pages.bend::no_contents": "77b549dc142a5593b627995a1da9e1774dc1e18fc327b4340f01dada67a84a01",
-    "laws/site/pages.bend::outline": "e072b8360eeb38aa764bd6b52866e2f07b944f4eb663076a2a92f2de5fa6fdf9"
+    "laws/a11y.bend::a11y": "bd161288dfbd0b75075bcafd17a1c841c846839b9b070444c0e88e05950eadb0",
+    "laws/agents.bend::poppy": "c1fd40f287bc2ea2bac0e058d91fb57deac985453c43203c6e19a5b660269ba1",
+    "laws/crawl.bend::robots": "09b843c1b02a169b8360a9a0fa5dc33b4bf3102156fc75b29490970b149f393c",
+    "laws/crawl.bend::sitemap": "f902fc119c3985b0af4fb5073f9caac0f846cf8ab6b90da29700e35702aa1358",
+    "laws/home/text.bend::home_shown": "447e34597c3b959ad4e1d8448cca2d35f889fb6af5e6cf90d3fb330e0cc67013",
+    "laws/home/text.bend::home_text": "574243b8e3a2e63e02a5922c835639ea058ea4557da9aa7bb7e874f231bd8345",
+    "laws/links.bend::links_html": "06f2a37f463af26aea19591ef6a79908394e42301be30336ded096cecd7c0e6e",
+    "laws/links.bend::links_text": "60619052b84685ce3d24d55bfd117cea67ef1e03c8de1cc6c2fc560f01ee52f6",
+    "laws/meta.bend::canonical": "1b426049cba54fb6bd3dae0e61664d4919858193806cdae15fec6809b78f1fcd",
+    "laws/meta.bend::metadata": "03e1408d3f7da0b711bdebe07ff0be1303c5f27f5307ddcbf431354c9c3926c0",
+    "laws/pages.bend::headings": "ffcbb33ab9b2909287b37c0001d3bbc7e81a41a23233674b5572ba0e9a88fe4b",
+    "laws/pages.bend::home_page": "350785c04d12a3344441192bca7069bb553683dc724a43e1f3921dff31eff194",
+    "laws/pages.bend::lang": "ce60b81aeb85a5d5140de4bf1bab38426cb0709d6d2f65fc2004ef93db6e6f23"
   },
   "spec": {
-    "LAWS.bend": "11d9ed63c641dcd69dc156a0602c9c4dc69fc7342ceba484cb86ccb3703b763f",
-    "laws/site/agents.bend": "d41581888fc96fbe868a7ff63087c380fb2fa4faf34f4cf871468034f7654296",
-    "laws/site/base/html/lexer.bend": "be45f8c68910145763372a18b54a62e121782dbd106b6effc36f74f023ace921",
-    "laws/site/base/html/tokens.bend": "73297124b431a689fed368a7092b4d069e4baa32dc3240b42e811223d8967caf",
-    "laws/site/base/html/tree.bend": "f1f56ffe506b9b9839ab5348c2613829ce67be4cd52bf30dacabe79736fa3a5b",
-    "laws/site/base/page.bend": "aa11aad2ba7d64caad4ddd4b24e120e54bc8f6f8c66cd161291d02bdf8c71ca7",
-    "laws/site/home/groups.bend": "21996f708d6228741bfc2c270c59aee9bd7a319f5b7a3f23d0ef54bc5e931120",
-    "laws/site/home/rows.bend": "3de8fef07b99ed62b50eed62b4da519eae3bdf068c02608f8d69f5bab76f0c36",
-    "laws/site/home/text.bend": "922274d25410fa5cae02276a7b94f19180ee273f596b5608e69d7e15a20366b8",
-    "laws/site/pages.bend": "dbd564f66f176476e3a9e301dabc4b357b65f7d67c4f30bfde8160aaa0f774ad"
+    "LAWS.bend": "e4e1bc3fb64f3f1cbab3a8e21fb86c0b74835916c3c107fa2886e02719b2b752",
+    "laws/a11y.bend": "bc5086991641ef7695c58b713637bfaa7ddb8daa21aa98c2e3b63497958129a1",
+    "laws/agents.bend": "1c83f0aed88729ecc075109510510ce84e977c3fbc3a86bc71cea5bab1543461",
+    "laws/base/html/lexer.bend": "ef4f9f6dac1daa68959db2ffd98096922849dafd2019483e509cfbd2cefd82db",
+    "laws/base/html/refs.bend": "d54a2d7e10ac6720a7ff2db1178d8ea700c15454df70b25301ea1f2417a11b9e",
+    "laws/base/html/tokens.bend": "9d97a64a114fd2f52a4fa548358ef05a57429a0b79d0dcfeb4f1749bace04d5d",
+    "laws/base/html/tree.bend": "a097cacca4e0216f43cb9ba30ce747030d72a553c2ec4dea08ce900b50c06f16",
+    "laws/base/page.bend": "2b5fe26084ac3e404753f3bdb3710093f53064605085ac0fd055182ce3f3f3c7",
+    "laws/crawl.bend": "065b048bdf9d249e94243a8a7f60b9624288fe11a14a120d87cdd5aac91a6c0d",
+    "laws/home/text.bend": "03a39c82539f20a48602d0db3915715a777499ec65dcfe5746d9b7be26cee34f",
+    "laws/links.bend": "535bf93e2efb4d1a4b9e29e36a95d735b2d2b0a2ea1881eebeb111059a45a215",
+    "laws/links/refs.bend": "7daa3e9f467d559ec21c75e5faecc12ae66f0d6aad6a884905da86f8218e6270",
+    "laws/links/serve.bend": "cee88b3e06dfb6e0617a80f272ddd73318f7e15af5e790895a9b4db526a14efe",
+    "laws/links/url.bend": "3edf60e31cf0bd2d4fdb822b91b8e1134c1cd248c90ed7c1e405a7877284a1f7",
+    "laws/meta.bend": "a4f854ddf4c94b77f21a0394c24a6ba4ce0f5310590760ee846015a084803398",
+    "laws/pages.bend": "fa6264fe2b4d8ed20e032c17b817a64453435ba1548b8f3891b46ad81f161865"
   },
   "spec_files": {}
 }
