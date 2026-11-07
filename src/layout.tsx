@@ -590,19 +590,20 @@ const styles = stylex.create({
     // Contact stays on the row it had when the name carried a page under it.
     paddingBottom: { default: null, [media.desktop]: space.linkGap },
     /**
-     * Phones: the pinned trail's backing, solid page color from above the viewport's top (under
-     * Safari's translucent top bar), so content passing under it never shows through. Its foot
-     * stands as far below the baseline as its top stands above the cap height: the bar's padding
-     * is uneven (a section gap above less the heading's shift, a unit below plus it) and Inter's
-     * caps sit centred on the line, so the difference, `sectionGap - unit + 2 * baseline.heading`,
-     * extends it below the bar. Viewport-wide, behind the text (the trail's `zIndex` makes it the
-     * stacking context).
+     * Phones: the pinned trail's backing, solid page color so content passing under it never
+     * shows through. It reaches a whole viewport above the top: Safari draws the page under its
+     * translucent top bar, above the layout viewport, and a backing that stopped at the top left
+     * scrolled content visible there, cut off at the backing's edge. Its foot stands as far below
+     * the baseline as its top stands above the cap height: the bar's padding is uneven (a section
+     * gap above less the heading's shift, a unit below plus it) and Inter's caps sit centred on
+     * the line, so the difference, `sectionGap - unit + 2 * baseline.heading`, extends it below
+     * the bar. Viewport-wide, behind the text (the trail's `zIndex` makes it the stacking context).
      */
     "::before": {
       content: { default: null, [media.mobile]: '""' },
       position: "absolute",
       zIndex: -1,
-      top: `calc(-1 * env(safe-area-inset-top))`,
+      top: "-100lvh",
       bottom: `calc(${space.unit} - ${space.sectionGap} - 2 * ${baseline.heading})`,
       left: `calc(-1 * ${phoneInsetLeft})`,
       width: "100vw",
