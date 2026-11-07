@@ -1,6 +1,7 @@
 {
   "name": "gildrb-web",
   "private": true,
+  "license": "UNLICENSED",
   "scripts": {
     "dev": "vp dev",
     "build": "vp build",
