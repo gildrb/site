@@ -1,0 +1,4 @@
+# Archetypon's engine glue: built from TypeScript in gildrb/archetypon (web/src), copied here.
+public/tools/archetypon/*.js linguist-generated
+# Third-party player (lottie-web), minified.
+public/ben-davis/lottie.min.js linguist-vendored
