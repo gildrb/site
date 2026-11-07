@@ -540,9 +540,11 @@ const styles = stylex.create({
     position: { default: "relative", [media.mobile]: "sticky" },
     top: { default: baseline.heading, [media.mobile]: 0 },
     zIndex: { default: null, [media.mobile]: 100 },
-    // The bar is only as wide as its text, so taps land on the page beside it. Inner pages back
-    // it with a viewport-wide solid (`caseName` `::before`); iOS Safari may tint its top bar from
-    // that backing (a sticky box at least 90% of the viewport wide) and keep the color after a tap.
+    // iOS Safari tints its top bar from a fixed or sticky element at least 90% of the viewport
+    // wide, then keeps that color after any tap, so the bar is only as wide as its text. It has
+    // no background of its own: content passes behind it and the top bar follows the page. A
+    // solid backing was tried: Safari draws the page under its translucent top bar, where no
+    // backing reaches, so content showed above it with a hard cut.
     width: { default: null, [media.mobile]: "fit-content" },
     maxWidth: { default: null, [media.mobile]: "100%" },
     // Phones: the bar's top padding takes the heading's baseline shift (`baseline.heading`, which
@@ -589,27 +591,6 @@ const styles = stylex.create({
     // The breadcrumb's page name is gone; the block keeps its line, the gap and the margin, so
     // Contact stays on the row it had when the name carried a page under it.
     paddingBottom: { default: null, [media.desktop]: space.linkGap },
-    /**
-     * Phones: the pinned trail's backing, solid page color so content passing under it never
-     * shows through. It reaches a whole viewport above the top: Safari draws the page under its
-     * translucent top bar, above the layout viewport, and a backing that stopped at the top left
-     * scrolled content visible there, cut off at the backing's edge. Its foot stands as far below
-     * the baseline as its top stands above the cap height: the bar's padding is uneven (a section
-     * gap above less the heading's shift, a unit below plus it) and Inter's caps sit centred on
-     * the line, so the difference, `sectionGap - unit + 2 * baseline.heading`, extends it below
-     * the bar. Viewport-wide, behind the text (the trail's `zIndex` makes it the stacking context).
-     */
-    "::before": {
-      content: { default: null, [media.mobile]: '""' },
-      position: "absolute",
-      zIndex: -1,
-      top: "-100lvh",
-      bottom: `calc(${space.unit} - ${space.sectionGap} - 2 * ${baseline.heading})`,
-      left: `calc(-1 * ${phoneInsetLeft})`,
-      width: "100vw",
-      pointerEvents: "none",
-      backgroundColor: colors.bg,
-    },
   },
   /** Phones: the trail's slash — no state, as the grey name it follows. */
   crumb: {
