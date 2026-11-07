@@ -1,9 +1,9 @@
 // Desktop homepage: the row under the pointer, in keyboard focus or selected with J and K
 // (`keys.ts`) shows its page's lead picture below the table (`Previews` in home.tsx). The page
-// carries only the empty room and the pictures as data; after the first paint, when the browser
-// is idle, each picture is made, loaded and decoded at the size it shows at, so the first hover
-// finds it ready. Every picture shares one frame: the text column's full width (its four
-// fields), 16:10, its top and height on the 8px grid, filled edge to edge and cropped to it.
+// carries only the empty room, and the pictures as data in its head; after the first paint, when
+// the browser is idle, each picture is made, loaded and decoded at the size it shows at, so the
+// first hover finds it ready. Every picture shares one frame: the text column's full width (its
+// four fields), 16:10, its top and height on the 8px grid, filled edge to edge and cropped to it.
 // A picture shows only once ready, and only where the frame fits above the page's bottom inset;
 // in less room nothing shows.
 
@@ -11,7 +11,7 @@ import * as stylex from "@stylexjs/stylex";
 import { h, render } from "preact";
 import { ui } from "./ui.tsx";
 
-/** One row's picture, as `home.tsx` writes it into the room. */
+/** One row's picture, as `home.tsx` writes it into the page's head. */
 export type PreviewData =
   | { $: "Image"; href: string; src: string; srcset: string | null }
   | { $: "Video"; href: string; poster: string; src: string }
@@ -34,7 +34,7 @@ type Picture = { box: HTMLElement; data: PreviewData; animate: ((on: boolean) =>
 export function enablePreview(): void {
   const area = document.querySelector<HTMLElement>("[data-previews]");
   const list = document.querySelector<HTMLElement>("[data-rows]");
-  const source = area?.querySelector("script")?.textContent;
+  const source = document.getElementById("preview-data")?.textContent;
   if (!area || !list || !source) return;
   const parsed: unknown = JSON.parse(source);
   const data = Array.isArray(parsed) ? parsed.filter(isPreviewData) : [];

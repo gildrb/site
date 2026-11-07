@@ -43,7 +43,7 @@ const alternates: [rel: string, type: string, path: string, title: string][] = [
   ["service-doc", "text/html", `/${developers.slug}`, developers.description],
 ];
 
-function Head({ shareImage }: { shareImage: string }) {
+function Head({ shareImage, previews }: { shareImage: string; previews: readonly Preview[] }) {
   return (
     <>
       <meta name="description" content={description} />
@@ -73,6 +73,13 @@ function Head({ shareImage }: { shareImage: string }) {
       <meta property="profile:username" content={person.handle} />
       <meta name="twitter:card" content="summary_large_image" />
       <JsonLd value={profile} />
+      {/* The desktop previews' pictures as data (`Previews`): read after the first paint, so
+          they wait here rather than weigh on the page's body. */}
+      <script
+        type="application/json"
+        id="preview-data"
+        dangerouslySetInnerHTML={{ __html: scriptJson(previewData(previews)) }}
+      />
     </>
   );
 }
@@ -90,7 +97,7 @@ export function Home({
     <Document
       assets={assets}
       title={title}
-      head={<Head shareImage={assets.shareImage} />}
+      head={<Head shareImage={assets.shareImage} previews={previews} />}
       mono={false}
       home
     >
@@ -114,7 +121,7 @@ export function Home({
               more: work.filter(({ from }) => from.$ === "Archive" || !from.project.listed).length,
             }}
           />
-          <Previews previews={previews} />
+          <Previews />
         </Main>
       </Shell>
     </Document>
@@ -128,12 +135,17 @@ export const livePreviews: ReadonlySet<string> = new Set(["curves-demo"]);
  * Desktop: the lead picture of the row under the pointer or selected with the keys, in the room
  * below the table, and nothing at rest. It shows as the row lights, at once, and leaves with the
  * row's fade (`motion.response`). Only the empty room is markup, so it never shifts the page;
- * the pictures travel as data (`PreviewData`), which `preview.ts` turns into elements after the
- * first paint, loads, fits to the room and shows one at a time. Decoration: the row already names
- * what it shows.
+ * the pictures travel as data in the head (`previewData`), which `preview.ts` turns into
+ * elements after the first paint, loads, fits to the room and shows one at a time. Decoration:
+ * the row already names what it shows.
  */
-function Previews({ previews }: { previews: readonly Preview[] }) {
-  const data: PreviewData[] = previews.map(({ href, id }) => {
+function Previews() {
+  return <div {...stylex.props(styles.previews)} aria-hidden="true" data-previews />;
+}
+
+/** Each previewed row's picture, as `preview.ts` reads it from `#preview-data`. */
+function previewData(previews: readonly Preview[]): PreviewData[] {
+  return previews.map(({ href, id }) => {
     if (id === "curves-demo")
       return { $: "Specimen", href, font: versioned("/fonts/curves.woff2") };
     const item = artwork[id];
@@ -143,11 +155,6 @@ function Previews({ previews }: { previews: readonly Preview[] }) {
       ? { $: "Video", href, poster: src, src: versioned(`/videos/gil-rodrigues-${id}.mp4`) }
       : { $: "Image", href, src, srcset: srcset ?? null };
   });
-  return (
-    <div {...stylex.props(styles.previews)} aria-hidden="true" data-previews>
-      <script type="application/json" dangerouslySetInnerHTML={{ __html: scriptJson(data) }} />
-    </div>
-  );
 }
 
 const styles = stylex.create({

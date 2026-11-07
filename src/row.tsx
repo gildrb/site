@@ -7,9 +7,10 @@ import { Figures, ui, untranslated } from "./ui.tsx";
 /**
  * One project in a three-column subgrid. The parent grid owns the columns; `home` rows live in
  * the homepage table, the others in the case pages' next-project lists, and both look the same:
- * no glyph, the row under the pointer or in focus brightens (`ui.respond`). A row that leaves the
- * site underlines its title, as the article links do. Every row: the title, a short noun phrase,
- * and a fact set right, closing the row on its right edge.
+ * no glyph, the row under the pointer or in focus brightens (`ui.respond`, its cells with it:
+ * `ui.row`, `ui.respondCell`). A row that leaves the site underlines its title, as the article
+ * links do. Every row: the title, a short noun phrase, and a fact set right, closing the row on
+ * its right edge.
  * - Projects: what it is (`descriptor`) and where it runs (`platform`). No date: what it does
  *   matters, not when it started.
  * - Work: what was made (`work`) and the date.
@@ -23,7 +24,10 @@ export function Row({ project, first, home }: { project: Project; first: boolean
     <a
       {...stylex.props(
         rowMarker,
+        // The cells' text style, inherited: one set of classes for the row, not one per cell.
+        ui.text,
         ui.respond,
+        ui.row,
         styles.row,
         !first && styles.divided,
         !home && styles.next,
@@ -35,8 +39,7 @@ export function Row({ project, first, home }: { project: Project; first: boolean
     >
       <Title
         {...stylex.props(
-          ui.text,
-          ui.respond,
+          ui.respondCell,
           styles.cell,
           styles.title,
           project.external && ui.outbound,
@@ -46,19 +49,19 @@ export function Row({ project, first, home }: { project: Project; first: boolean
       >
         {project.title}
       </Title>
-      <span {...stylex.props(ui.text, ui.respond, styles.descriptor)} id={`${id}-descriptor`}>
+      <span {...stylex.props(ui.respondCell, styles.descriptor)} id={`${id}-descriptor`}>
         {group.$ === "Work" ? group.work : project.descriptor}
       </span>
       {group.$ === "Work" ? (
         <time
-          {...stylex.props(ui.text, ui.respond, styles.cell, styles.date)}
+          {...stylex.props(ui.respondCell, styles.cell, styles.date)}
           id={`${id}-end`}
           dateTime={project.date}
         >
           <Figures text={formatDate(project.date)} />
         </time>
       ) : (
-        <span {...stylex.props(ui.text, ui.respond, styles.cell, styles.date)} id={`${id}-end`}>
+        <span {...stylex.props(ui.respondCell, styles.cell, styles.date)} id={`${id}-end`}>
           {group.platform}
         </span>
       )}

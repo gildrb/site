@@ -267,16 +267,14 @@ ${cases
 
 /**
  * Pages for search engines only: the Markdown and machine-readable copies are found through
- * llms.txt and the `alternate` links. Product pages on gildrb.com subdomains belong here too,
- * since one Search Console domain property covers them; other domains keep their own sitemap.
+ * llms.txt and the `alternate` links. Only this host's pages: a sitemap may not list URLs of
+ * another host, subdomains included (sitemaps.org), so product pages served on their own host
+ * are left to that host.
  */
 const sitemapUrls = [
   url("/"),
   url("/all"),
   ...[...cases, ...pages].map(({ slug }) => url(`/${slug}`)),
-  ...products
-    .map(({ home }) => `${home}/`)
-    .filter((home) => new URL(home).hostname.endsWith(`.${new URL(origin).hostname}`)),
 ];
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

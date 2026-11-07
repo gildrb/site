@@ -94,7 +94,8 @@ export const underline = stylex.defineConsts({
  *   and the index turns to noise. 300ms was tried; 200ms is the owner's pick.
  * - Every element whose color changes takes part. One that changes on its row's or its parent's
  *   state inherits the color (`color: inherit`) rather than setting its own, or it switches at
- *   once while its row fades. Elements that set their own state color carry `ui.respond`.
+ *   once while its row fades. Elements that set their own state color carry `ui.respond`, a
+ *   row's cells `ui.respondCell`.
  * Nothing travels toward the pointer and no marker follows the reader: state is color. The only
  * thing that moves is an image enlarging, for the reader's own click, over `entry.ts`'s
  * `zoomDuration` (200ms) on its spring.

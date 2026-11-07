@@ -82,11 +82,12 @@ export function Portfolio({ more }: { more: number }) {
                   <Row key={project.href} project={project} first={row === 0} home />
                 ))}
               {group === "Work" && (
-                <a {...stylex.props(rowMarker, ui.respond, styles.archive)} href="/all">
-                  <span {...stylex.props(ui.text, ui.emphasis, ui.respond, styles.title)}>
-                    Archive
-                  </span>
-                  <span {...stylex.props(ui.text, ui.respond, styles.more)}>
+                <a
+                  {...stylex.props(rowMarker, ui.text, ui.respond, ui.row, styles.archive)}
+                  href="/all"
+                >
+                  <span {...stylex.props(ui.emphasis, ui.respondCell, styles.title)}>Archive</span>
+                  <span {...stylex.props(ui.respondCell, styles.more)}>
                     <Figures text={String(more)} /> more
                   </span>
                 </a>

@@ -92,10 +92,12 @@ const globalCss = [
   "@supports (animation-timeline:scroll()){[data-pagebar] .thumb{animation:pagebar-travel linear both;animation-timeline:scroll(root block)}}",
 ].join("\n");
 
-// Also exposed for the font gate, which realigns with the final font before revealing.
-const alignScript = `window.__align=()=>(${align.toString()})();window.__align()`;
-// The scrollbar must answer the first frame of scrolling, not the island script's module graph.
-const scrollbarScript = `(${pageScrollbar.toString()})()`;
+// Defined in the head, run at the body's end (`bodyScript`): the page's bytes past `<body` stay
+// its content, while the code runs at the same moment as if written there. `__align` is also
+// exposed for the font gate, which realigns with the final font before revealing. The scrollbar
+// must answer the first frame of scrolling, not the island script's module graph.
+const headScript = `window.__align=()=>(${align.toString()})();window.__pageScrollbar=${pageScrollbar.toString()}`;
+const bodyScript = "__align();__pageScrollbar()";
 
 /**
  * Chrome prerenders a page of this site once a pointer rests on its link (about 200ms) or presses
@@ -171,6 +173,7 @@ export function Document({
           <link rel="preload" href={monoUrl} as="font" type="font/woff2" crossOrigin="anonymous" />
         )}
         <style dangerouslySetInnerHTML={{ __html: `${globalCss}\n${assets.css}` }} />
+        <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: headScript }} />
         {/* After the stylesheet, so the Inter @font-face exists when the gate asks for it. */}
         <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: fontGate }} />
         <script type="speculationrules" dangerouslySetInnerHTML={{ __html: speculationRules }} />
@@ -201,10 +204,9 @@ export function Document({
           aria-atomic="true"
         />
         {children}
-        {/* Align the layout before the first paint (see the render-blocking `expect` in <head>). */}
-        <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: alignScript }} />
-        {/* The scrollbar lives before the first paint too, so scrolling on arrival finds it. */}
-        <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: scrollbarScript }} />
+        {/* Align the layout before the first paint (see the render-blocking `expect` in <head>),
+            and start the scrollbar, so scrolling on arrival finds it. */}
+        <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: bodyScript }} />
         <div id="aligned" hidden />
       </body>
     </html>
@@ -287,9 +289,9 @@ export function Name({ current }: { current?: string }) {
       >
         Gil Rodrigues
       </a>
-      {/* Phones: the trail in the pinned bar — the name, the chevron (no state), the page. */}
+      {/* Phones: the trail in the pinned bar — the name, the slash (no state), the page. */}
       <span {...stylex.props(styles.crumb)} aria-hidden="true">
-        &gt;
+        /
       </span>
       <span {...stylex.props(styles.mobilePage)}>{current}</span>
     </p>
@@ -376,8 +378,8 @@ const phoneGutter = `calc(${space.sectionGap} / 2)`;
 const phoneGutterLeft = `max(${phoneGutter}, env(safe-area-inset-left))`;
 /**
  * Phones wider than the text's column (tablets, narrow windows) centre the whole page on it, name
- * bar and theme toggle included, so nothing stands apart at the viewport's edges. In the wrapper
- * and on fixed elements `100%` is the viewport's width.
+ * bar included, so nothing stands apart at the viewport's edges. In the wrapper and on fixed
+ * elements `100%` is the viewport's width.
  */
 const phoneMargin = `calc((100% - ${space.contentColumn}) / 2)`;
 const phoneInsetLeft = `max(${phoneGutterLeft}, ${phoneMargin})`;
@@ -441,9 +443,15 @@ const styles = stylex.create({
   },
   /**
    * Phones: the page ends a section gap below its last row, and clears Safari's bottom bar,
-   * which floats over the page.
+   * which floats over the page. A column at least the viewport tall, so on a short page the
+   * signature still sits at the foot (`signatureMobile`), where the homepage's does.
    */
+  // StyleX merges by property: `display` and `minHeight` here replace `layout`'s whole value, so
+  // the desktop defaults are restated.
   caseLayout: {
+    display: { default: "grid", [media.mobile]: "flex" },
+    flexDirection: { default: null, [media.mobile]: "column" },
+    minHeight: { default: "100vh", [media.mobile]: "100dvh" },
     paddingBottom: {
       default: null,
       [media.mobile]: `calc(${space.sectionGap} + env(safe-area-inset-bottom))`,
@@ -532,9 +540,9 @@ const styles = stylex.create({
     position: { default: "relative", [media.mobile]: "sticky" },
     top: { default: baseline.heading, [media.mobile]: 0 },
     zIndex: { default: null, [media.mobile]: 100 },
-    // iOS Safari tints its top bar from a fixed or sticky element at least 90% of the viewport
-    // wide, then keeps that color after any tap, so the bar is only as wide as its text. It has
-    // no background of its own: content passes behind it and the top bar follows the page.
+    // The bar is only as wide as its text, so taps land on the page beside it. Inner pages back
+    // it with a viewport-wide solid (`caseName` `::before`); iOS Safari may tint its top bar from
+    // that backing (a sticky box at least 90% of the viewport wide) and keep the color after a tap.
     width: { default: null, [media.mobile]: "fit-content" },
     maxWidth: { default: null, [media.mobile]: "100%" },
     // Phones: the bar's top padding takes the heading's baseline shift (`baseline.heading`, which
@@ -581,14 +589,34 @@ const styles = stylex.create({
     // The breadcrumb's page name is gone; the block keeps its line, the gap and the margin, so
     // Contact stays on the row it had when the name carried a page under it.
     paddingBottom: { default: null, [media.desktop]: space.linkGap },
+    /**
+     * Phones: the pinned trail's backing, solid page color from above the viewport's top (under
+     * Safari's translucent top bar), so content passing under it never shows through. Its foot
+     * stands as far below the baseline as its top stands above the cap height: the bar's padding
+     * is uneven (a section gap above less the heading's shift, a unit below plus it) and Inter's
+     * caps sit centred on the line, so the difference, `sectionGap - unit + 2 * baseline.heading`,
+     * extends it below the bar. Viewport-wide, behind the text (the trail's `zIndex` makes it the
+     * stacking context).
+     */
+    "::before": {
+      content: { default: null, [media.mobile]: '""' },
+      position: "absolute",
+      zIndex: -1,
+      top: `calc(-1 * env(safe-area-inset-top))`,
+      bottom: `calc(${space.unit} - ${space.sectionGap} - 2 * ${baseline.heading})`,
+      left: `calc(-1 * ${phoneInsetLeft})`,
+      width: "100vw",
+      pointerEvents: "none",
+      backgroundColor: colors.bg,
+    },
   },
-  /** Phones: the trail's chevron — no state, as the grey name it follows. */
+  /** Phones: the trail's slash — no state, as the grey name it follows. */
   crumb: {
     display: { default: "none", [media.mobile]: "inline" },
     color: colors.tertiary,
     paddingInline: space.unit,
   },
-  /** Phones: the page's name in the pinned trail, after the chevron (`Name`). */
+  /** Phones: the page's name in the pinned trail, after the slash (`Name`). */
   mobilePage: {
     display: { default: "none", [media.mobile]: "block" },
     color: colors.primary,
@@ -602,10 +630,14 @@ const styles = stylex.create({
   },
   signatureMobile: {
     display: { default: "block", [media.desktop]: "none" },
-    // Phones: last in the flow, under the article and the next projects.
+    // Phones: last in the flow, under the article and the next projects. Its box ends a touch
+    // inset below the text, as the homepage's does (`portfolio.tsx` `signature`), so at the end of
+    // a page it stands exactly where the homepage's stands.
     order: { default: null, [media.mobile]: 6 },
     margin: 0,
     paddingTop: space.sectionGap,
+    paddingBottom: space.touchInset,
+    marginTop: { default: null, [media.mobile]: "auto" },
   },
   /**
    * The parent: the same name, in the same type and place as on the homepage, so only its color

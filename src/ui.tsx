@@ -145,23 +145,24 @@ export const ui = stylex.create({
     touchAction: "manipulation",
     userSelect: "none",
   },
+  /**
+   * Read by screen readers, never seen: a clipped 1px box out of the flow (the a11y project's
+   * visually-hidden pattern). The reset layer zeroes its margin and padding; its border, if it
+   * has one, is clipped with the rest.
+   */
   srOnly: {
     position: "absolute",
     width: "1px",
     height: "1px",
-    padding: 0,
-    margin: "-1px",
     overflow: "hidden",
-    clip: "rect(0, 0, 0, 0)",
+    clipPath: "inset(50%)",
     whiteSpace: "nowrap",
-    borderWidth: 0,
   },
   /**
    * The one way a state change shows. Hover, focus or selection changes a color (text, underline,
    * background) or an opacity; nothing moves. Entering the state is immediate, so a pointer
    * crossing a list lights each row as it passes; leaving it fades over `motion.response`. The
-   * state is the element's own, or its row's (`rowMarker`), the only ancestor that carries hover
-   * for its descendants.
+   * state is the element's own; a row's cells take their row's (`respondCell`).
    */
   respond: {
     transitionProperty: "color, text-decoration-color, background-color, opacity",
@@ -172,10 +173,29 @@ export const ui = stylex.create({
       ":is([aria-current])": "0s",
       // A row the keys select (`keys.ts`) is lit and let go as a hovered one.
       ":is([data-selected])": "0s",
-      [stylex.when.ancestor(":hover", rowMarker)]: "0s",
-      [stylex.when.ancestor(":focus-visible", rowMarker)]: "0s",
-      [stylex.when.ancestor("[data-selected]", rowMarker)]: "0s",
     },
+    transitionTimingFunction: motion.responseEasing,
+  },
+  /**
+   * Set with `rowMarker` and `respond` on a table row, the only element that carries hover for
+   * its descendants: while it is hovered, in focus or selected, its cells' `respondCell` enters
+   * at once too. A custom property, inherited, so each cell needs one class for it, not three.
+   */
+  row: {
+    "--row-response": {
+      default: null,
+      ":hover": "0s",
+      ":focus-visible": "0s",
+      ":is([data-selected])": "0s",
+    },
+  },
+  /**
+   * `respond` for a cell of a `row`: a cell is neither focused nor selected on its own and is
+   * hovered only within its row, so the row's state is its own.
+   */
+  respondCell: {
+    transitionProperty: "color, text-decoration-color, background-color, opacity",
+    transitionDuration: `var(--row-response, ${motion.response})`,
     transitionTimingFunction: motion.responseEasing,
   },
   /**
