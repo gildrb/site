@@ -1,5 +1,5 @@
-# gildrb.com's laws: files for agents (R11)
-# =========================================
+# gildrb.com's laws: files for agents (R11, R12)
+# ===============================================
 #
 # The terms shared by every area are in base/page.bend; LAWS.bend lists
 # the requirements.
@@ -255,6 +255,97 @@ def Poppy.host(m: Maybe<&2, List<&2, H.Tok>>) -> Maybe<&2, String>:
     case Some{+ts}:
       Bool.pick(Maybe<&2, String>, Canon.head(ts), Spec.canon(ts), None{})
 
+# Terms: Markdown for agents (R12, A7)
+# ------------------------------------
+
+# b is false
+def Md.not(b: Bool) -> Bool:
+  match b:
+    case True{}:
+      False{}
+    case False{}:
+      True{}
+
+# the title line read so far (reversed) is not blank, and neither is the rest
+def Md.both(line: String, body: String) -> Bool:
+  Md.not(Laws.Wide.blank(line)) && Md.not(Laws.Wide.blank(body))
+
+# after "# ": the title up to the first line feed, then the body; a file
+# that ends on its title line has no body
+def Md.title(s: String, line: String) -> Bool:
+  match s:
+    case SNil{}:
+      False{}
+    case SCon{Chr{10}, t}:
+      Md.both(line, t)
+    case SCon{c, t}:
+      Md.title(t, SCon{c, line})
+
+# after "#": a space, then the title
+def Md.space(s: String) -> Bool:
+  match s:
+    case SNil{}:
+      False{}
+    case SCon{Chr{32}, t}:
+      Md.title(t, SNil{})
+    case SCon{c, t}:
+      False{}
+
+# a Markdown text for agents: it begins with "# ", a title that is not
+# blank (Laws.Wide.blank), a line feed, then text that is not blank
+def Md.shape(s: String) -> Bool:
+  match s:
+    case SNil{}:
+      False{}
+    case SCon{Chr{35}, t}:
+      Md.space(t)
+    case SCon{c, t}:
+      False{}
+
+# the file is in the build and has the shape of a Markdown text for agents
+def Md.ok(m: Maybe<&2, List<&2, String>>) -> Bool:
+  match m:
+    case None{}:
+      False{}
+    case Some{cs}:
+      Md.shape(Laws.Spec.cat(cs))
+
+# r is a page's path reversed: the slug before ".html", if it ends so
+def Slug.rev(r: String) -> Maybe<&2, String>:
+  match r:
+    case SCon{Chr{108}, SCon{Chr{109}, SCon{Chr{116}, SCon{Chr{104}, SCon{Chr{46}, t}}}}}:
+      Some{String.reverse(t)}
+    case _:
+      None{}
+
+# content/<slug>.md; a path with no slug names no file (Spec.file gives None)
+def Md.content(m: Maybe<&2, String>) -> String:
+  match m:
+    case None{}:
+      ""
+    case Some{s}:
+      String.append("content/", String.append(s, ".md"))
+
+# the file the Markdown route serves for a page (A7): / is index.html.md,
+# /all is llms-full.txt, any other /<slug> is content/<slug>.md
+def Md.file(+p: String) -> String:
+  Bool.pick(String, String.eq(p, "index.html"), "index.html.md", Bool.pick(String, String.eq(p, "all.html"), "llms-full.txt", Md.content(Slug.rev(String.reverse(p)))))
+
+# a page's Markdown is in the build and has the shape; 404.html has none
+def Md.page(+p: String) -> Bool:
+  Bool.pick(Bool, String.eq(p, "404.html"), True{}, Md.ok(Laws.Spec.file(Md.file(p))))
+
+def Md.pages(ps: List<&2, String>) -> Bool:
+  match ps:
+    case Nil{}:
+      True{}
+    case Con{p, t}:
+      Md.page(p) && Md.pages(t)
+
+# llms.txt, .well-known/llms.txt and every page's Markdown (R12)
+def Agent.text() -> Bool:
+  Md.ok(Laws.Spec.file("llms.txt")) && Md.ok(Laws.Spec.file(".well-known/llms.txt")) && Md.pages(Laws.Spec.page_paths())
+
 # Laws
 # ----
 
@@ -269,3 +360,13 @@ def Poppy.host(m: Maybe<&2, List<&2, H.Tok>>) -> Maybe<&2, String>:
 # waive L4-examples-only: the law reads one file, poppy.json, and the site no input; this law pins its bytes whole.
 law poppy:
   {Poppy.ok(Laws.Spec.file(".well-known/poppy.json"), Poppy.host(Laws.Spec.toks(Laws.Spec.page("index.html")))) == True{} : Bool}
+
+# LAW agent_text: llms.txt, .well-known/llms.txt and, for every HTML page but
+# 404.html, the Markdown the site serves for it (A7: index.html.md for /,
+# llms-full.txt for /all, content/<slug>.md for /<slug>) are in the build,
+# begin with "# " and a title line that is not blank, and have text after
+# it that is not blank (blank as in R4). NOT checked: what the Markdown
+# says, that it matches its page, its links (R10 does those), or that
+# functions/ serves it (A7). (R12)
+law agent_text:
+  {Agent.text() == True{} : Bool}

@@ -1,6 +1,7 @@
 {
   "laws": {
     "laws/a11y.bend::a11y": "bd161288dfbd0b75075bcafd17a1c841c846839b9b070444c0e88e05950eadb0",
+    "laws/agents.bend::agent_text": "9a0469fbba543c78b052f4a26c7d692a028124d1943da64a40ccd9340308e40c",
     "laws/agents.bend::poppy": "c1fd40f287bc2ea2bac0e058d91fb57deac985453c43203c6e19a5b660269ba1",
     "laws/crawl.bend::robots": "09b843c1b02a169b8360a9a0fa5dc33b4bf3102156fc75b29490970b149f393c",
     "laws/crawl.bend::sitemap": "f902fc119c3985b0af4fb5073f9caac0f846cf8ab6b90da29700e35702aa1358",
@@ -17,7 +18,7 @@
   "spec": {
     "LAWS.bend": "e4e1bc3fb64f3f1cbab3a8e21fb86c0b74835916c3c107fa2886e02719b2b752",
     "laws/a11y.bend": "bc5086991641ef7695c58b713637bfaa7ddb8daa21aa98c2e3b63497958129a1",
-    "laws/agents.bend": "1c83f0aed88729ecc075109510510ce84e977c3fbc3a86bc71cea5bab1543461",
+    "laws/agents.bend": "0b4afd4c89219287f587e0b14b4d7448ff2911d6c9f74ae5487f71e1b3ba3dc5",
     "laws/base/html/lexer.bend": "ef4f9f6dac1daa68959db2ffd98096922849dafd2019483e509cfbd2cefd82db",
     "laws/base/html/refs.bend": "d54a2d7e10ac6720a7ff2db1178d8ea700c15454df70b25301ea1f2417a11b9e",
     "laws/base/html/tokens.bend": "9d97a64a114fd2f52a4fa548358ef05a57429a0b79d0dcfeb4f1749bace04d5d",

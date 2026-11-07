@@ -13,6 +13,7 @@ import ./proof/pages/headings.bend as Headings
 import ./proof/pages/lang.bend as Lang
 import ./proof/pages/home_page.bend as HomePage
 import ./proof/agents/poppy.bend as Poppy
+import ./proof/agents/agent_text.bend as AgentText
 import ./proof/a11y/a11y.bend as A11y
 import ./proof/meta/canonical.bend as Canonical
 import ./proof/meta/metadata.bend as Metadata

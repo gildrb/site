@@ -22,6 +22,7 @@
 # R9 robots.txt has the line "Sitemap: https://gildrb.com/sitemap.xml" exactly once, and every line is printable ASCII and one of: empty, a comment, "User-agent: <token>", "Allow: /", "Content-Signal: <value>", that Sitemap line (so no Disallow line at all).
 # R10 No dead internal links: every internal reference (HTML href, src, poster, srcset URLs, og:image/og:url content; markdown link targets and bare https://gildrb.com/ URLs in llms.txt, llms-full.txt, .well-known/llms.txt, index.html.md, content/*.md; sitemap.xml <loc>) resolves to a file in dist/, "/" with index.html, P.html, P/ with Pindex.html, a non-splat _redirects source whose target resolves, or a function route (A4); a fragment on a link to an HTML page is empty or an id on that page.
 # R11 /.well-known/poppy.json declares the public website of this domain and nothing it does not serve: {protocol_version: "0.1", organization: {name: "Gil Rodrigues", domain: <the site's host>}, web: {}}; the site's host is the host of the homepage's one canonical URL.
+# R12 Text for agents: llms.txt, .well-known/llms.txt and, for every HTML page but 404.html, the Markdown served for it (A7) are in dist/ and are a Markdown text: "# " and a non-blank title line, then non-blank text (blank as in R4).
 #
 # Assumptions
 #
@@ -31,6 +32,7 @@
 # A4 Paths served by functions/ (trusted, not proven): /mcp, /mcp/server-card, /.well-known/mcp, /api, /api/v1, /api/profile, /api/v1/profile, /api/status, /api/v1/status.
 # A5 Pages are read as UTF-8 (the host sends text/html; charset=utf-8). Scripts are not run. CSS is not read: text hidden by CSS counts as shown.
 # A6 scripts/site.py copies dist/ faithfully; the Bend compiler and checker are trusted.
+# A7 The Markdown route (functions/[[path]].ts, trusted, not proven) serves index.html.md for /, llms-full.txt for /all and content/<slug>.md for every other /<slug>.
 
 import Base
 import ./laws/home/text.bend as HomeText
