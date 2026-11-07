@@ -18,13 +18,40 @@ loadPagesAhead();
 // After `enableZoom`: an enlarged artwork takes Escape first, before it can mean "go home".
 enableKeys();
 enablePreview();
+bridgeConverter();
+
+/**
+ * Archetypon's converter hydrates once its chunk loads, after the page. Until then "Choose files"
+ * would do nothing and a dropped file would open in the browser in place of the page: this opens
+ * the converter's file input and puts dropped files into it, where the converter finds them when
+ * it mounts. It stands down once the input carries `data-live` (set by the converter).
+ */
+function bridgeConverter() {
+  const converter = document.querySelector<HTMLElement>('[data-island="archetypon"]');
+  const input = converter?.querySelector<HTMLInputElement>('input[type="file"]');
+  if (!converter || !input) return;
+  const early = () => input.dataset.live === undefined;
+  converter.addEventListener("click", (event) => {
+    if (!early() || !(event.target instanceof Element)) return;
+    if (event.target.closest("[data-pick]")) input.click();
+  });
+  addEventListener("dragover", (event) => {
+    if (early() && event.dataTransfer?.types.includes("Files") === true) event.preventDefault();
+  });
+  addEventListener("drop", (event) => {
+    if (!early() || !event.dataTransfer?.types.includes("Files")) return;
+    event.preventDefault();
+    input.files = event.dataTransfer.files;
+  });
+}
 
 const islands: { [Name in keyof Islands]: () => Promise<Islands[Name]> | Islands[Name] } = {
   email: () => Email,
   portfolio: () => Portfolio,
   // Only the Heph case study shows the terminal; keep it out of the homepage bundle.
   heph: () => import("./islands/heph.tsx").then((module) => module.Terminal),
-  // Only Archetypon's page (archetypon.gildrb.com) runs the converter; its engine loads once files arrive.
+  // Only Archetypon's page (archetypon.gildrb.com) runs the converter; its engine loads once the
+  // page is idle, or when files come near.
   archetypon: () => import("./islands/archetypon.tsx").then((module) => module.Converter),
   // Only product pages show copyable commands.
   command: () => import("./islands/command.tsx").then((module) => module.Command),

@@ -3,16 +3,16 @@ import type { TargetedEvent } from "preact";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { colors, media, space, typeScale } from "../tokens.stylex.ts";
 import { ui } from "../ui.tsx";
+import { type Pass, Pool } from "./archetypon-pool.ts";
+import { FORMATS, isFormat, type Format, type Output } from "./archetypon-protocol.ts";
 
 /**
  * Archetypon in the browser. The engine is the tool's own web build, copied unchanged into
- * `public/tools/archetypon/`: a module worker that runs `archetypon.wasm` on the files it is
- * sent. Nothing leaves the device.
+ * `public/tools/archetypon/`: module workers that run `archetypon.wasm` on the files they are
+ * sent, a few at once (`archetypon-pool.ts`). Nothing leaves the device.
  */
 const engine = "/tools/archetypon/worker.js";
 
-const formats = ["svg", "pdf", "png", "webp", "jpeg", "ico"] as const;
-type Format = (typeof formats)[number];
 const labels: Record<Format, string> = {
   svg: "SVG",
   pdf: "PDF",
@@ -67,7 +67,6 @@ const startBackgrounds: Readonly<Record<Filled, Background>> = {
 };
 
 type Step = "pending" | "running" | "done";
-type Output = { path: string; size: number };
 type Result = {
   name: string;
   preview: string | null;
@@ -79,80 +78,6 @@ type Result = {
 type Font = { text: string; error: boolean };
 type Status = { text: string; error: boolean };
 type Download = { url: string; name: string; bytes: number };
-
-type Message =
-  | { type: "font"; name: string; families: string[] }
-  | { type: "font-error"; name: string; message: string }
-  | { type: "open"; index: number; width: number; height: number }
-  | { type: "step"; index: number; format: Format }
-  | { type: "stepped"; index: number; format: Format; files: Output[] }
-  | { type: "converted"; index: number }
-  | { type: "failed"; index: number; code: number; message: string }
-  | { type: "done"; zip: ArrayBuffer | null; ms: number }
-  | { type: "error"; message: string };
-
-const isObject = (value: unknown): value is object => typeof value === "object" && value !== null;
-const isFormat = (value: unknown): value is Format =>
-  typeof value === "string" && formats.some((format) => format === value);
-const isIndex = (value: unknown): value is number =>
-  typeof value === "number" && Number.isInteger(value) && value >= 0;
-const isOutput = (value: unknown): value is Output =>
-  isObject(value) &&
-  "path" in value &&
-  typeof value.path === "string" &&
-  "size" in value &&
-  typeof value.size === "number";
-const isStrings = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every((item) => typeof item === "string");
-
-/** Checks a worker message against the engine's protocol (`worker.js`). */
-function decode(value: unknown): Message | null {
-  if (!isObject(value)) return null;
-  const data: Record<string, unknown> = Object.fromEntries(Object.entries(value));
-  const { type, index, name, message, format } = data;
-  switch (type) {
-    case "font":
-      return typeof name === "string" && isStrings(data.families)
-        ? { type, name, families: data.families }
-        : null;
-    case "font-error":
-      return typeof name === "string" && typeof message === "string"
-        ? { type, name, message }
-        : null;
-    case "open": {
-      const { width, height } = data;
-      return isIndex(index) && typeof width === "number" && typeof height === "number"
-        ? { type, index, width, height }
-        : null;
-    }
-    case "step":
-      return isIndex(index) && isFormat(format) ? { type, index, format } : null;
-    case "stepped": {
-      const { files } = data;
-      return isIndex(index) && isFormat(format) && Array.isArray(files) && files.every(isOutput)
-        ? { type, index, format, files }
-        : null;
-    }
-    case "converted":
-      return isIndex(index) ? { type, index } : null;
-    case "failed": {
-      const { code } = data;
-      return isIndex(index) && typeof code === "number" && typeof message === "string"
-        ? { type, index, code, message }
-        : null;
-    }
-    case "done": {
-      const { zip, ms } = data;
-      return (zip === null || zip instanceof ArrayBuffer) && typeof ms === "number"
-        ? { type, zip, ms }
-        : null;
-    }
-    case "error":
-      return typeof message === "string" ? { type, message } : null;
-    default:
-      return null;
-  }
-}
 
 function kind(name: string): "svg" | "font" | null {
   if (/\.svgz?$/i.test(name)) return "svg";
@@ -201,11 +126,10 @@ async function preview(file: File): Promise<string> {
 }
 
 /**
- * One run of the engine: the formats that share a background, and the options for them. The
- * engine takes its options once, before the first SVG, so each background is its own pass; their
- * archives are merged into one (`mergeZips`).
+ * The engine passes for the options: the formats that share a background, and the options for
+ * them. The engine takes its options once, before the first SVG, so each background is its own
+ * pass; the pool joins their archives into one.
  */
-type Pass = { formats: Format[]; config: string };
 type Options = { formats: Format[]; passes: Pass[] } | { errors: string[] };
 
 /** The options as picked; a new object whenever one of them changes. */
@@ -216,7 +140,7 @@ type Settings = {
 };
 
 function readOptions({ selected, backgrounds, quality }: Settings): Options {
-  const chosen = formats.filter((format) => selected.has(format));
+  const chosen = FORMATS.filter((format) => selected.has(format));
   const errors: string[] = [];
   if (chosen.includes("jpeg") && (quality === "" || Number(quality) < 1)) {
     errors.push("JPEG quality runs from 1% to 100%.");
@@ -235,7 +159,9 @@ function readOptions({ selected, backgrounds, quality }: Settings): Options {
   groups.set(firstFill, [...vector, ...firstFormats]);
   const passes = [...groups].map(([fill, group]) => ({
     formats: group,
-    config: `sizes=${rasterSizes.join(",")}\nbackground=${fill}\njpeg-quality=${quality || "100"}\n`,
+    sizes: [...rasterSizes],
+    background: fill,
+    quality: quality || "100",
   }));
   return { formats: chosen, passes };
 }
@@ -256,162 +182,54 @@ type Job = {
   note: string;
 };
 
-/**
- * Joins the engine's ZIP archives into one. Each archive's file data is copied as it is; their
- * central directories are joined, with each entry's offset moved to where its data now starts.
- * An entry whose name an earlier archive already has (the folder of an SVG) is left out.
- */
-function mergeZips(zips: readonly ArrayBuffer[]): Uint8Array<ArrayBuffer> {
-  const bodies: Uint8Array[] = [];
-  const entries: Uint8Array[] = [];
-  const names = new Set<string>();
-  let offset = 0;
-  for (const zip of zips) {
-    const bytes = new Uint8Array(zip);
-    const view = new DataView(zip);
-    let end = bytes.length - 22;
-    while (end >= 0 && view.getUint32(end, true) !== 0x06054b50) end -= 1;
-    if (end < 0) throw new Error("an archive has no end record");
-    const total = view.getUint16(end + 10, true);
-    const start = view.getUint32(end + 16, true);
-    if (start === 0xffffffff) throw new Error("an archive is too large to join");
-    bodies.push(bytes.subarray(0, start));
-    let at = start;
-    for (let index = 0; index < total; index += 1) {
-      if (view.getUint32(at, true) !== 0x02014b50) throw new Error("an archive entry is broken");
-      const length =
-        46 +
-        view.getUint16(at + 28, true) +
-        view.getUint16(at + 30, true) +
-        view.getUint16(at + 32, true);
-      const entry = bytes.slice(at, at + length);
-      const name = new TextDecoder().decode(entry.subarray(46, 46 + view.getUint16(at + 28, true)));
-      if (!names.has(name)) {
-        names.add(name);
-        const fields = new DataView(entry.buffer);
-        fields.setUint32(42, fields.getUint32(42, true) + offset, true);
-        entries.push(entry);
-      }
-      at += length;
-    }
-    offset += start;
-  }
-  const directory = entries.reduce((sum, entry) => sum + entry.length, 0);
-  const merged = new Uint8Array(offset + directory + 22);
-  let at = 0;
-  for (const part of [...bodies, ...entries]) {
-    merged.set(part, at);
-    at += part.length;
-  }
-  const record = new DataView(merged.buffer, at, 22);
-  record.setUint32(0, 0x06054b50, true);
-  record.setUint16(8, entries.length, true);
-  record.setUint16(10, entries.length, true);
-  record.setUint32(12, directory, true);
-  record.setUint32(16, offset, true);
-  return merged;
-}
-
 /** Where a running conversion reports to. */
 type Sink = {
   /** Whether this run is still the current one; a newer run or a clear silences it. */
   live: () => boolean;
-  stop: () => void;
   update: (index: number, change: (result: Result) => Result) => void;
   addFont: (font: Font) => void;
   setStatus: (status: Status) => void;
   setDownload: (download: Download) => void;
 };
 
+const reason = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
 /**
- * Runs a job's passes one after another on one worker, each on a fresh engine, reports what they
- * say, and joins their archives when the last is done. An SVG counts as converted when every pass
- * converted it.
+ * Runs a job on the engine's workers and reports what they say; the pool joins the archives. An
+ * SVG counts as converted when every pass converted it.
  */
-function run(current: Worker, job: Job, sink: Sink): void {
+async function run(pool: Pool, job: Job, sink: Sink): Promise<void> {
   const { files, note, passes } = job;
   const failures = new Set<string>();
   const converted = new Map<number, number>();
-  const zips: ArrayBuffer[] = [];
-  let pass = 0;
-  let ms = 0;
+  const fail = (text: string) => sink.setStatus({ text, error: true });
 
-  const fail = (text: string) => {
-    sink.stop();
-    sink.setStatus({ text, error: true });
-  };
-
-  const send = (index: number) => {
-    const next = passes[index];
-    if (next === undefined) return;
-    void Promise.all([
+  let inputs;
+  try {
+    inputs = await Promise.all([
       Promise.all(
         files.map(async (file) => ({ stem: stem(file.name), data: await file.arrayBuffer() })),
       ),
       Promise.all(
         job.fonts.map(async (file) => ({ name: file.name, data: await file.arrayBuffer() })),
       ),
-    ]).then(
-      ([svgData, fontData]) => {
-        if (!sink.live()) return;
-        current.postMessage(
-          { svgs: svgData, fonts: fontData, formats: next.formats, options: next.config },
-          [...svgData, ...fontData].map((item) => item.data),
-        );
-      },
-      (error: unknown) => {
-        if (!sink.live()) return;
-        fail(
-          `The files could not be read: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      },
-    );
-  };
+    ]);
+  } catch (error) {
+    if (sink.live()) fail(`The files could not be read: ${reason(error)}`);
+    return;
+  }
+  if (!sink.live()) return;
+  const [svgs, fonts] = inputs;
 
-  const finish = () => {
-    sink.stop();
-    const done = [...converted.values()].filter((times) => times === passes.length).length;
-    if (zips.length === 0) {
-      fail("Nothing was converted. The problems are listed below.");
-      return;
-    }
-    let zip: Uint8Array<ArrayBuffer>;
-    try {
-      zip = mergeZips(zips);
-    } catch (error) {
-      fail(`The archive could not be made: ${error instanceof Error ? error.message : ""}`);
-      return;
-    }
-    const first = files[0];
-    const name = files.length === 1 && first ? `${stem(first.name)}.zip` : "archetypon.zip";
-    const url = URL.createObjectURL(new Blob([zip], { type: "application/zip" }));
-    sink.setDownload({ url, name, bytes: zip.byteLength });
-    const seconds = (ms / 1000).toFixed(1);
-    const problems = failures.size === 0 ? "" : ` ${count(failures.size, "problem")} below.`;
-    sink.setStatus({
-      text: `Converted ${done} of ${count(files.length, "SVG")} in ${seconds} s.${problems}${note}`,
-      error: failures.size > 0,
-    });
-  };
-
-  current.addEventListener("message", ({ data }: MessageEvent<unknown>) => {
+  const outcome = await pool.convert({ svgs, fonts, passes: [...passes] }, (message) => {
     if (!sink.live()) return;
-    const message = decode(data);
-    if (!message) {
-      fail("The converter sent something it should not have.");
-      return;
-    }
     switch (message.type) {
-      // Every pass reads the fonts again; the first reports them.
       case "font":
-        if (pass === 0)
-          sink.addFont({ text: message.families.join(", ") || message.name, error: false });
+        sink.addFont({ text: message.families.join(", ") || message.name, error: false });
         return;
       case "font-error":
-        if (pass === 0) {
-          failures.add(`${message.name}: ${message.message}`);
-          sink.addFont({ text: `${message.name}: ${message.message}`, error: true });
-        }
+        failures.add(`${message.name}: ${message.message}`);
+        sink.addFont({ text: `${message.name}: ${message.message}`, error: true });
         return;
       case "open": {
         const size = `${message.width} × ${message.height}`;
@@ -445,31 +263,45 @@ function run(current: Worker, job: Job, sink: Sink): void {
         }));
         return;
       }
-      case "done":
-        if (message.zip !== null) zips.push(message.zip);
-        ms += message.ms;
-        pass += 1;
-        if (pass < passes.length) send(pass);
-        else finish();
-        return;
-      case "error":
-        fail(`Conversion failed: ${message.message}`);
-        return;
     }
   });
-  current.addEventListener("error", (event) => {
-    event.preventDefault();
-    if (!sink.live()) return;
-    fail(`The converter could not start${event.message ? `: ${event.message}` : "."}`);
-  });
+  if (!sink.live()) return;
 
-  send(0);
+  switch (outcome.type) {
+    case "done": {
+      const { zip } = outcome;
+      if (zip === null) {
+        fail("Nothing was converted. The problems are listed below.");
+        return;
+      }
+      const done = [...converted.values()].filter((times) => times === passes.length).length;
+      const first = files[0];
+      const name = files.length === 1 && first ? `${stem(first.name)}.zip` : "archetypon.zip";
+      const url = URL.createObjectURL(new Blob([zip], { type: "application/zip" }));
+      sink.setDownload({ url, name, bytes: zip.byteLength });
+      const seconds = (outcome.ms / 1000).toFixed(1);
+      const problems = failures.size === 0 ? "" : ` ${count(failures.size, "problem")} below.`;
+      sink.setStatus({
+        text: `Converted ${done} of ${count(files.length, "SVG")} in ${seconds} s.${problems}${note}`,
+        error: failures.size > 0,
+      });
+      return;
+    }
+    case "failed":
+      fail(`Conversion failed: ${outcome.message}`);
+      return;
+    case "crashed":
+      fail(`The converter could not start: ${outcome.message}.`);
+      return;
+    case "cancelled":
+      return;
+  }
 }
 
-export function Converter() {
+export function Converter({ wasm }: { wasm: string }) {
   const [svgs, setSvgs] = useState<File[]>([]);
   const [fonts, setFonts] = useState<File[]>([]);
-  const [selected, setSelected] = useState<ReadonlySet<Format>>(() => new Set(formats));
+  const [selected, setSelected] = useState<ReadonlySet<Format>>(() => new Set(FORMATS));
   const [backgrounds, setBackgrounds] = useState(startBackgrounds);
   const [quality, setQuality] = useState("100");
   const [results, setResults] = useState<Result[]>([]);
@@ -477,7 +309,10 @@ export function Converter() {
   const [status, setStatus] = useState<Status | null>(null);
   const [download, setDownload] = useState<Download | null>(null);
   const [dragging, setDragging] = useState(false);
-  const worker = useRef<Worker | null>(null);
+  // One pool of warm workers per page, made on first use: the server render makes none.
+  const pool = useRef<Pool | null>(null);
+  const workers = useCallback(() => (pool.current ??= new Pool(engine, wasm)), [wasm]);
+  const generation = useRef(0);
   const settings = useMemo<Settings>(
     () => ({ selected, backgrounds, quality }),
     [selected, backgrounds, quality],
@@ -485,13 +320,20 @@ export function Converter() {
   // The settings of the last conversion: once they differ, the options have changed since.
   const [applied, setApplied] = useState(settings);
 
-  // Stop the engine and free the ZIP when the page goes away.
-  useEffect(() => () => worker.current?.terminate(), []);
+  // Load the engine once the page is idle, so the first file converts at once; stop the engine
+  // when the page goes away. Free the ZIP when it changes.
+  useEffect(() => {
+    const cancel = workers().warmWhenIdle();
+    return () => {
+      cancel();
+      pool.current?.dispose();
+    };
+  }, [workers]);
   useEffect(() => () => void (download && URL.revokeObjectURL(download.url)), [download]);
 
   const stop = useCallback(() => {
-    worker.current?.terminate();
-    worker.current = null;
+    generation.current += 1;
+    pool.current?.cancel();
   }, []);
 
   const convert = useCallback(
@@ -526,14 +368,12 @@ export function Converter() {
         );
       }
 
-      const current = new Worker(engine, { type: "module" });
-      worker.current = current;
-      run(
-        current,
+      const current = generation.current;
+      void run(
+        workers(),
         { files, fonts: fontFiles, passes: options.passes, note },
         {
-          live: () => worker.current === current,
-          stop,
+          live: () => generation.current === current,
           update,
           addFont: (font) => setFontList((list) => [...list, font]),
           setStatus,
@@ -541,7 +381,7 @@ export function Converter() {
         },
       );
     },
-    [settings, stop],
+    [settings, stop, workers],
   );
 
   const add = useCallback(
@@ -588,6 +428,8 @@ export function Converter() {
   useEffect(() => {
     const enter = (event: DragEvent) => {
       if (!hasFiles(event)) return;
+      // Files are on their way: load the engine now if the page has not yet.
+      workers().warm();
       event.preventDefault();
       dragDepth.current += 1;
       setDragging(true);
@@ -619,7 +461,7 @@ export function Converter() {
       removeEventListener("dragleave", leave);
       removeEventListener("drop", drop);
     };
-  }, [add]);
+  }, [add, workers]);
 
   // Options apply as they change: the files convert again after a short pause in typing.
   useEffect(() => {
@@ -642,8 +484,20 @@ export function Converter() {
   const empty = svgs.length === 0 && fonts.length === 0;
   const picker = useRef<HTMLInputElement>(null);
 
+  // Files chosen or dropped before the converter hydrated wait in its input (`client.ts`
+  // `bridgeConverter`); the input's `data-live` tells that bridge to stand down from now on.
+  useEffect(() => {
+    const input = picker.current;
+    if (!input) return;
+    input.dataset.live = "";
+    const early = [...(input.files ?? [])];
+    if (early.length === 0) return;
+    input.value = "";
+    add(early);
+  }, [add]);
+
   return (
-    <div {...stylex.props(styles.tool)}>
+    <div {...stylex.props(styles.tool)} onPointerEnter={() => workers().warm()}>
       <OptionsPanel
         selected={selected}
         backgrounds={backgrounds}
@@ -658,6 +512,7 @@ export function Converter() {
       <div {...stylex.props(styles.actions)}>
         <button
           {...stylex.props(ui.reset, ui.quiet, ui.respond, ui.focusRing)}
+          data-pick=""
           onClick={() => picker.current?.click()}
         >
           Choose files
@@ -818,7 +673,7 @@ function OptionsPanel({
           <span>Background</span>
           <span {...stylex.props(styles.end)}>Quality</span>
         </div>
-        {formats.map((format, index) => {
+        {FORMATS.map((format, index) => {
           const on = selected.has(format);
           return (
             <div
