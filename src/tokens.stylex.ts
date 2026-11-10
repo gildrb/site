@@ -199,6 +199,13 @@ export const colors = stylex.defineVars({
    * graying out, and takes whatever it sits under.
    */
   hairline: { default: "oklch(67% 0.042 64 / 0.16)", [light]: "oklch(50% 0.036 58 / 0.18)" },
+  /**
+   * The shell block's hairline as a gradient, after superlogical.com's prompt blocks: faint at
+   * the top, strongest at the bottom, so the border fades downward and the panel reads as lit
+   * from above. Same inks as `hairline`, spread over a quarter to a bit past its strength.
+   */
+  edgeTop: { default: "oklch(67% 0.042 64 / 0.05)", [light]: "oklch(50% 0.036 58 / 0.06)" },
+  edgeBottom: { default: "oklch(67% 0.042 64 / 0.18)", [light]: "oklch(50% 0.036 58 / 0.25)" },
   codeBg: { default: "oklch(21% 0.016 58)", [light]: "oklch(95% 0.018 82)" },
   /**
    * Depth without shadows, from light (after raycast.com): a surface is lit from above. Its fill

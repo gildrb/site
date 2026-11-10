@@ -80,20 +80,29 @@ export function Command({ commands }: { commands: readonly string[] }) {
 
 const styles = stylex.create({
   /**
-   * A shell block as a quiet panel (Vercel/eve): a fill one step off the page
-   * (`ui.codeSurface`), the hairline as a ring, and a two-layer shadow — one ambient, one
-   * direct — so the panel sits on the page instead of floating. The commands keep a two-unit
-   * inset from the panel's edge, and the copy button is a transparent icon: the lines fade out
-   * (`fade.end`) before it, so no command runs beneath it.
+   * A shell block as a panel with depth, after superlogical.com's prompt blocks: the hairline is
+   * a gradient border — near-transparent at the top, full hairline strength at the bottom, so it
+   * fades downward — drawn as two backgrounds (the fill on `padding-box`, the edge on
+   * `border-box`) under a transparent 1px border. Under it, three tight layered shadows, one
+   * pixel-step each, seat the panel on the page without floating it. The border takes a pixel a
+   * side, so the insets give it back to keep the block's size. The copy button stays a
+   * transparent icon: the lines fade out (`fade.end`) before it, so no command runs beneath it.
    */
   block: {
     display: "grid",
     gridTemplateColumns: `minmax(0, 1fr) ${space.toggleSize}`,
     alignItems: "start",
     width: "100%",
-    paddingBlock: `calc(${space.unit} / 2)`,
-    paddingRight: `calc(${space.unit} / 2)`,
-    boxShadow: `0 0 0 1px ${colors.hairline}, 0 1px 1px oklch(0% 0 0 / 0.02), 0 4px 8px -4px oklch(0% 0 0 / 0.05), 0 16px 24px -8px oklch(0% 0 0 / 0.06)`,
+    paddingBlock: `calc(${space.unit} / 2 - 1px)`,
+    paddingRight: `calc(${space.unit} / 2 - 1px)`,
+    backgroundImage: `linear-gradient(${colors.codeBg}, ${colors.codeBg}), linear-gradient(to bottom, ${colors.edgeTop}, ${colors.edgeBottom})`,
+    backgroundClip: "padding-box, border-box",
+    backgroundOrigin: "padding-box, border-box",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "transparent",
+    boxShadow:
+      "0 1px 1px oklch(0% 0 0 / 0.04), 0 2px 2px -1px oklch(0% 0 0 / 0.04), 0 4px 6px -3px oklch(0% 0 0 / 0.05)",
   },
   lines: {
     display: "grid",
