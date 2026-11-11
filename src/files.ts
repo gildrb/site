@@ -1,4 +1,5 @@
 import {
+  about,
   cases,
   caseWork,
   contacts,
@@ -69,6 +70,11 @@ export const profile = {
       alternateName: person.alternateNames,
       description: person.about,
       jobTitle: person.role,
+      worksFor: {
+        "@type": "Organization",
+        name: about.employer.label,
+        url: about.employer.href,
+      },
       url: url("/"),
       email: `mailto:${email}`,
       mainEntityOfPage: { "@id": url("/#profile") },

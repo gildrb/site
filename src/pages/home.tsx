@@ -16,9 +16,9 @@ import {
 } from "../layout.tsx";
 import { sources } from "../markdown.tsx";
 import { media as artwork } from "../media.ts";
-import { developers, origin, person, profiles, projects } from "../site.ts";
-import { media, motion, space } from "../tokens.stylex.ts";
-import { ui } from "../ui.tsx";
+import { about, developers, origin, person, profiles, projects } from "../site.ts";
+import { colors, media, motion, space } from "../tokens.stylex.ts";
+import { ui, untranslated } from "../ui.tsx";
 import { shareFrame } from "../og.tsx";
 import type { PreviewData } from "../preview.ts";
 import { versioned } from "../versioned.ts";
@@ -111,7 +111,25 @@ export function Home({
             <h2 {...stylex.props(ui.label, styles.heading)} id="profile-summary-title">
               About
             </h2>
-            <p {...stylex.props(ui.text)}>{person.about}</p>
+            {/* `person.about`, with the employer linked. */}
+            <p {...stylex.props(ui.text)}>
+              {about.lead}{" "}
+              <a
+                {...stylex.props(
+                  ui.outbound,
+                  ui.respond,
+                  ui.focusRing,
+                  styles.employer,
+                  styles.whole,
+                )}
+                href={about.employer.href}
+                rel="noopener noreferrer"
+                {...untranslated}
+              >
+                {about.employer.label}
+              </a>
+              , <span {...stylex.props(styles.whole)}>{about.place}</span>
+            </p>
           </section>
           <Island
             name="portfolio"
@@ -174,6 +192,14 @@ const styles = stylex.create({
   heading: {
     marginBottom: { default: space.sectionContentGap, [media.desktop]: space.linkGap },
   },
+  /** Set like the article links (`markdown.tsx`), with `ui.outbound`. */
+  employer: { color: { default: colors.primary, ":focus-visible": colors.primary } },
+  /**
+   * Phones: a part of the About sentence that never breaks inside, so the sentence wraps between
+   * its parts ("… at Sybil Solutions," then "based in Germany.") and no line ends on a lone word.
+   * Desktop wraps word by word, as `align.ts` measures it.
+   */
+  whole: { whiteSpace: { default: null, [media.mobile]: "nowrap" } },
   /**
    * The room below the table, to the page's bottom inset (the layout's last row): the pictures
    * hang from its top, on the fields from the text's left edge (`preview.ts` sizes them). The

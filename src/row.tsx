@@ -1,6 +1,6 @@
 import * as stylex from "@stylexjs/stylex";
 import { useId } from "preact/hooks";
-import { formatDate, type Project } from "./site.ts";
+import { type Project, workDate } from "./site.ts";
 import { colors, listMarker, media, rowMarker, space, typeScale } from "./tokens.stylex.ts";
 import { Figures, ui, untranslated } from "./ui.tsx";
 
@@ -13,7 +13,7 @@ import { Figures, ui, untranslated } from "./ui.tsx";
  * its right edge.
  * - Projects: what it is (`descriptor`) and where it runs (`platform`). No date: what it does
  *   matters, not when it started.
- * - Work: what was made (`work`) and the date.
+ * - Work: what was made (`work`) and the date, or since when for work that goes on.
  * Named by what it shows; the full `description` describes it.
  */
 export function Row({ project, first, home }: { project: Project; first: boolean; home: boolean }) {
@@ -58,7 +58,7 @@ export function Row({ project, first, home }: { project: Project; first: boolean
           id={`${id}-end`}
           dateTime={project.date}
         >
-          <Figures text={formatDate(project.date)} />
+          <Figures text={workDate(project.date, group.ongoing)} />
         </time>
       ) : (
         <span {...stylex.props(ui.respondCell, styles.cell, styles.date)} id={`${id}-end`}>

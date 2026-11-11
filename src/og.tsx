@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { Resvg } from "@resvg/resvg-js";
 import satori from "satori";
 import { decompress } from "wawoff2";
-import { contacts, email, formatDate, groups, person, profiles, projects } from "./site.ts";
+import { contacts, email, groups, person, profiles, projects, workDate } from "./site.ts";
 import { colors, space, typeScale } from "./tokens.stylex.ts";
 
 /**
@@ -192,7 +192,9 @@ function Page({ css }: { css: string }) {
               whiteSpace: "nowrap",
             }}
           >
-            {project.group.$ === "Work" ? formatDate(project.date) : project.group.platform}
+            {project.group.$ === "Work"
+              ? workDate(project.date, project.group.ongoing)
+              : project.group.platform}
           </span>
         </div>
       )),

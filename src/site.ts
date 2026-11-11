@@ -1,6 +1,19 @@
 export const origin = "https://gildrb.com";
 export const email = "g@gildrb.com";
 
+export type Link = { label: string; href: string };
+
+/**
+ * The About sentence in its parts. The homepage links the employer and, on phones, keeps its name
+ * and the closing part whole, so the line breaks between them; everything else reads the sentence
+ * whole (`person.about`). profile.json gives the employer as `worksFor`.
+ */
+export const about = {
+  lead: "Design engineer at",
+  employer: { label: "Sybil Solutions", href: "https://www.sybilsolutions.ai/" },
+  place: "based in Germany.",
+} as const satisfies { lead: string; employer: Link; place: string };
+
 /**
  * Who this site is about. Keep it to facts that stay true: every page, feed and identity
  * file (profile.json, llms.txt, humans.txt, WebFinger) is generated from it.
@@ -14,10 +27,8 @@ export const person = {
   alternateNames: ["Gil", "gildrb", "Gil Rodrigues Barbosa", "Gil Domingos Rodrigues Barbosa"],
   role: "Design Engineer",
   /** The About text: the homepage, metadata, feeds and llms.txt. */
-  about: "Design engineer based in Germany.",
+  about: `${about.lead} ${about.employer.label}, ${about.place}`,
 } as const;
-
-export type Link = { label: string; href: string };
 
 export const profiles: readonly Link[] = [
   { label: "Are.na", href: "https://www.are.na/gil-rodrigues-tat8yjcamq4" },
@@ -28,13 +39,27 @@ export const profiles: readonly Link[] = [
 ];
 
 /** The date as people read it: "November 13, 2018". Parsed in UTC, so the day never shifts. */
-export function formatDate(date: string): string {
+function formatDate(date: string): string {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "long",
     timeZone: "UTC",
     year: "numeric",
   }).format(new Date(`${date}T00:00:00Z`));
+}
+
+/**
+ * A Work row's date as the table and the share image set it: the day the work was made, or, for
+ * work that goes on, the month it began: "Since August 2026".
+ */
+export function workDate(date: string, ongoing: boolean): string {
+  if (!ongoing) return formatDate(date);
+  const began = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    timeZone: "UTC",
+    year: "numeric",
+  }).format(new Date(`${date}T00:00:00Z`));
+  return `Since ${began}`;
 }
 
 export const contacts: readonly Link[] = [
@@ -49,10 +74,12 @@ export const contacts: readonly Link[] = [
  * Which homepage group a row belongs to. Projects are software Gil makes and maintains: the table
  * shows what each is (`descriptor`) and where it runs (`platform`), set right where a date would
  * be; no date. Work is design for clients and older studies: the table shows what was made
- * (`work`) and the date. The full `description` is every row's link description, for screen
- * readers and agents.
+ * (`work`) and the date, or since when for work that goes on (`ongoing`). The full `description`
+ * is every row's link description, for screen readers and agents.
  */
-export type Group = { $: "Projects"; platform: string } | { $: "Work"; work: string };
+export type Group =
+  | { $: "Projects"; platform: string }
+  | { $: "Work"; work: string; ongoing: boolean };
 
 /** The homepage's groups, in order. */
 export const groups: readonly Group["$"][] = ["Projects", "Work"];
@@ -93,13 +120,16 @@ export const cases: readonly Case[] = [
     date: "2026-08-26",
     title: "Local Studio",
     name: "Local Studio",
-    headline: "Local Studio: brand and website for private AI on your Mac",
+    headline: "Local Studio: brand, website and app for private AI on your Mac",
     descriptor: "On-device AI for Mac",
-    group: { $: "Work", work: "Brand and website" },
-    repository: null,
-    links: [{ label: "Site", href: "https://localstudio.ai/" }],
-    description: "Brand and website for Local Studio, private AI on a Mac.",
-    ogDescription: "Brand and website for Local Studio, private AI on a Mac.",
+    group: { $: "Work", work: "Brand, website and app", ongoing: true },
+    repository: "https://github.com/sybil-solutions/local-studio",
+    links: [
+      { label: "Site", href: "https://localstudio.ai/" },
+      { label: "Sybil Solutions", href: about.employer.href },
+    ],
+    description: "Brand, website and native app for Local Studio, private AI on a Mac.",
+    ogDescription: "Brand, website and native app for Local Studio, private AI on a Mac.",
     ogImage: "gil-rodrigues-local-studio-tour-960.webp",
   },
   {
@@ -110,7 +140,7 @@ export const cases: readonly Case[] = [
     name: "T3",
     headline: "T3: logomark studies by Gil Rodrigues",
     descriptor: "Coding agent client",
-    group: { $: "Work", work: "Logomark studies" },
+    group: { $: "Work", work: "Logomark studies", ongoing: false },
     repository: null,
     links: [{ label: "X", href: "https://x.com/gildrb_/status/2080990301208952994" }],
     description: "T3 logomark studies: product marks, icons and rejected directions.",
@@ -125,7 +155,7 @@ export const cases: readonly Case[] = [
     name: "Ben Davis",
     headline: "Ben Davis: a db monogram and the davis7.sh website",
     descriptor: "Developer and YouTuber",
-    group: { $: "Work", work: "Logo and website" },
+    group: { $: "Work", work: "Logo and website", ongoing: false },
     repository: null,
     links: [
       { label: "Site", href: "https://davis7.gildrb.com/" },
@@ -175,7 +205,7 @@ export const cases: readonly Case[] = [
     name: "Filen",
     headline: "Filen: identity concept by Gil Rodrigues",
     descriptor: "Encrypted cloud storage",
-    group: { $: "Work", work: "Identity concept" },
+    group: { $: "Work", work: "Identity concept", ongoing: false },
     repository: null,
     links: [{ label: "X", href: "https://x.com/gildrb_/status/2021242178727452998" }],
     description: "Identity concept for Filen: wordmark, app icon and campaign.",
@@ -190,7 +220,7 @@ export const cases: readonly Case[] = [
     name: "Jordan Gilbert",
     headline: "Jordan Gilbert: a pixel wordmark for n0thing",
     descriptor: "Counter-Strike player",
-    group: { $: "Work", work: "Pixel wordmark" },
+    group: { $: "Work", work: "Pixel wordmark", ongoing: false },
     repository: null,
     links: [{ label: "n0thing", href: "https://www.n0thing.gg/" }],
     description:
@@ -206,7 +236,7 @@ export const cases: readonly Case[] = [
     name: "CURVES",
     headline: "CURVES: a free geometric display typeface by Gil Rodrigues",
     descriptor: "Geometric display typeface",
-    group: { $: "Work", work: "Display typeface" },
+    group: { $: "Work", work: "Display typeface", ongoing: false },
     repository: null,
     links: [
       { label: "DaFont", href: "https://www.dafont.com/curves.font" },
@@ -224,7 +254,7 @@ export const cases: readonly Case[] = [
     name: "Mihai Lupascu",
     headline: "Mihai Lupascu: a compact channel logo by Gil Rodrigues",
     descriptor: "Overwatch streamer",
-    group: { $: "Work", work: "Channel logo" },
+    group: { $: "Work", work: "Channel logo", ongoing: false },
     repository: null,
     links: [{ label: "Twitch", href: "https://www.twitch.tv/ml7support" }],
     description: "Channel logo for Overwatch streamer mL7.",
