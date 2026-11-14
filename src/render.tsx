@@ -128,15 +128,9 @@ function fullText(): string {
       source: "/index.html.md",
       body: files["index.html.md"] ?? "",
     },
-    ...[...cases, ...pages].map(({ slug, name }) => ({
+    ...[...cases, ...pages, ...builtProducts].map(({ slug, name }) => ({
       heading: name,
       path: `${origin}/${slug}`,
-      source: `/content/${slug}.md`,
-      body: published(slug),
-    })),
-    ...builtProducts.map(({ slug, name, home }) => ({
-      heading: name,
-      path: `${home}/`,
       source: `/content/${slug}.md`,
       body: published(slug),
     })),

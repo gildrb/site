@@ -45,6 +45,7 @@ export function Row({ project, first, home }: { project: Project; first: boolean
           project.external && ui.outbound,
         )}
         id={`${id}-title`}
+        data-morph="row"
         {...untranslated}
       >
         {project.title}
@@ -147,6 +148,8 @@ const styles = stylex.create({
   /** The thing named, at the emphasis weight; the descriptor and date beside it stay at the text's. */
   title: {
     gridColumn: 1,
+    // As wide as its text: the box that travels to the page's title (`morph.ts`).
+    justifySelf: "start",
     margin: 0,
     fontWeight: typeScale.emphasisWeight,
     // The title keeps full contrast except while a sibling is lit, then dims with the row and

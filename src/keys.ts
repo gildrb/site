@@ -1,5 +1,4 @@
 import { copyEmail } from "./islands/email.tsx";
-import { origin, products } from "./site.ts";
 
 /**
  * Desktop keys, Vim's, for those who look for them; the page shows no hints:
@@ -145,11 +144,10 @@ function reveal(row: HTMLElement): void {
 
 /**
  * Back where the reader came from when that was the homepage, so it keeps its place; otherwise to
- * it. A product's own host has a page of its own at `/`: its homepage is gildrb.com.
+ * it.
  */
 function goHome(): void {
-  const productHost = products.some(({ home }) => new URL(home).host === location.host);
-  const target = productHost ? new URL(`${origin}/`) : new URL("/", location.origin);
+  const target = new URL("/", location.origin);
   const from = URL.canParse(document.referrer) ? new URL(document.referrer) : undefined;
   if (from?.origin === target.origin && from.pathname === "/" && history.length > 1) history.back();
   else location.assign(target);

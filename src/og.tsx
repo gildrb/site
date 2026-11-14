@@ -212,40 +212,19 @@ function Page({ css }: { css: string }) {
         fontFamily: "Inter",
       }}
     >
-      {/* Intro: the name beside the About line, as tall as the taller of the two. */}
+      {/* The name alone on the first row, in the page's heading size at weight 400, the share
+          font's one instance. */}
       <div
         style={{
           display: "flex",
-          gap: length(space.layoutGap),
+          width: length(space.sidebarColumn),
           marginBottom: length(space.groupGap),
+          fontSize: px(typeScale.headingSize),
+          letterSpacing: typeScale.headingTracking,
+          lineHeight: `${line}px`,
         }}
       >
-        {/* The heading size, as on the page; the weight stays 400, the one instance the share font carries. */}
-        <div
-          style={{
-            display: "flex",
-            width: length(space.sidebarColumn),
-            fontSize: px(typeScale.headingSize),
-            letterSpacing: typeScale.headingTracking,
-            lineHeight: `${line}px`,
-          }}
-        >
-          {person.name}
-        </div>
-        <div
-          style={{ display: "flex", flexDirection: "column", width: length(space.contentColumn) }}
-        >
-          <span
-            style={{
-              ...text,
-              color: color(colors.secondary),
-              marginBottom: length(space.linkGap),
-            }}
-          >
-            About
-          </span>
-          <span style={text}>{person.about}</span>
-        </div>
+        {person.name}
       </div>
       <div style={{ display: "flex", gap: length(space.layoutGap) }}>
         {/* Sidebar: contact, then profiles, on the sidebar pitch. */}
@@ -263,10 +242,20 @@ function Page({ css }: { css: string }) {
           <span style={{ ...text, color: color(colors.quaternary), marginTop: pitch }}>Links</span>
           {profiles.map(({ label }) => link(label))}
         </div>
-        {/* The table: Projects, then Work. */}
+        {/* About on Contact's line, then the table: Projects, then Work. */}
         <div
           style={{ display: "flex", flexDirection: "column", width: length(space.contentColumn) }}
         >
+          <span
+            style={{
+              ...text,
+              color: color(colors.secondary),
+              marginBottom: length(space.linkGap),
+            }}
+          >
+            About
+          </span>
+          <span style={{ ...text, marginBottom: length(space.groupGap) }}>{person.about}</span>
           {table}
         </div>
       </div>

@@ -4,8 +4,9 @@ import { fontGate } from "./entry.ts";
 import { Island } from "./island.tsx";
 import { Email } from "./islands/email.tsx";
 import { align } from "./align.ts";
+import { morphCss, morphScript } from "./morph.ts";
 import { pageScrollbar } from "./scrollbar.ts";
-import { contacts, type Link, origin, person, profiles } from "./site.ts";
+import { contacts, type Link, person, profiles } from "./site.ts";
 import { previewScript, themeCss } from "./theme.ts";
 import {
   baseline,
@@ -63,10 +64,8 @@ const globalCss = [
   // left at the top edge. There the fade already covers it nearly whole.
   "@keyframes list-row{entry 0%,exit 0%{opacity:1}exit 12%,exit 100%{opacity:0}}",
   "@supports (animation-timeline:view()){@media (max-width:767px){[data-rows]>div>*{animation:list-row linear both;animation-timeline:view()}}@media (min-width:768px){[data-dense] [data-rows]>div>*{animation:list-row linear both;animation-timeline:view()}}}",
-  // In-page links (skip to content, back to top) glide unless motion is reduced. Moving between
-  // pages has no transition: a cross-document one freezes the page until it ends, so Back or
-  // another click during it cannot cancel it and shows a flash. The browser swaps pages at once,
-  // and the sidebar, the same on every page, stays as it is.
+  // In-page links glide unless motion is reduced. Between pages, only a project's title moves
+  // (`morph.ts`).
   "@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}",
   // The site's own scrollbar (`scrollbar.ts`): a thumb at rest only while the page scrolls, on
   // hover, in focus or dragged, fading out 0.6s after it stops; resting on it or dragging it
@@ -90,13 +89,13 @@ const globalCss = [
   // Where supported, the page's own scroll moves the thumb (`scrollbar.ts`), in step with it.
   "@keyframes pagebar-travel{from{transform:translateY(0)}to{transform:translateY(var(--pagebar-travel,0px))}}",
   "@supports (animation-timeline:scroll()){[data-pagebar] .thumb{animation:pagebar-travel linear both;animation-timeline:scroll(root block)}}",
+  morphCss,
 ].join("\n");
 
-// Defined in the head, run at the body's end (`bodyScript`): the page's bytes past `<body` stay
-// its content, while the code runs at the same moment as if written there. `__align` is also
-// exposed for the font gate, which realigns with the final font before revealing. The scrollbar
-// must answer the first frame of scrolling, not the island script's module graph.
-const headScript = `window.__align=()=>(${align.toString()})();window.__pageScrollbar=${pageScrollbar.toString()}`;
+// Defined in the head, run at the body's end (`bodyScript`), so the bytes past `<body` stay
+// content. The font gate calls `__align` too; the scrollbar must not wait for the island script.
+// The title transition listens from the head, before the page's first frame.
+const headScript = `window.__align=()=>(${align.toString()})();window.__pageScrollbar=${pageScrollbar.toString()};${morphScript}`;
 const bodyScript = "__align();__pageScrollbar()";
 
 /**
@@ -194,7 +193,6 @@ export function Document({
           home ? [styles.homeBody, styles.fixedViewport] : styles.caseBody,
         )}
         id="top"
-        data-intro={person.about}
       >
         <div
           {...stylex.props(ui.srOnly)}
@@ -242,9 +240,6 @@ export function Sidebar({
         <span data-nosnippet>Skip to content</span>
       </a>
       {children}
-      <p {...stylex.props(ui.label, styles.signature)}>
-        © {year} {person.name}
-      </p>
     </aside>
   );
 }
@@ -261,8 +256,11 @@ export function Main({ home = false, children }: { home?: boolean; children: Com
           `display: contents`; this marker can, and being out of flow it takes no grid cell. */}
       <span {...stylex.props(styles.skipTarget)} id="content" tabIndex={-1} />
       {children}
-      {/* Phones: the signature follows the page's content. The homepage keeps its own, in the
-          table's list (`portfolio.tsx`). */}
+      {/* Desktop: the signature in the top right corner, on the name's line. Phones: it follows
+          the page's content; the homepage keeps its own, in the table's list (`portfolio.tsx`). */}
+      <p {...stylex.props(ui.label, styles.signature, !home && styles.caseSignature)}>
+        © {year} {person.name}
+      </p>
       {!home && (
         <p {...stylex.props(ui.label, styles.signatureMobile)}>
           © {year} {person.name}
@@ -273,27 +271,26 @@ export function Main({ home = false, children }: { home?: boolean; children: Com
 }
 
 /**
- * The site's name: on the homepage the `<h1>` with the phone toggle; on inner pages the same name
- * in grey, linking home. On phones the bar carries the page on the right; on other sizes the
- * page's own name sits at the top of the content (`case.tsx`), in the same type as here. The name
- * links to gildrb.com by its full URL: product pages live on their own hosts, where `/` is the
- * product page itself.
+ * The site's name: the homepage's `<h1>` with the phone toggle; elsewhere a grey link home.
+ * Phones add the page after a bar.
  */
 export function Name({ current }: { current?: string }) {
   return current ? (
     <p {...stylex.props(ui.heading, styles.name, styles.caseName)}>
       <a
         {...stylex.props(ui.target, ui.focusRing, ui.respond, styles.home)}
-        href={`${origin}/`}
+        href="/"
         {...untranslated}
       >
         Gil Rodrigues
       </a>
-      {/* Phones: the trail in the pinned bar — the name, the slash (no state), the page. */}
+      {/* Phones: the trail in the pinned bar — the name, the bar (no state), the page. */}
       <span {...stylex.props(styles.crumb)} aria-hidden="true">
-        /
+        |
       </span>
-      <span {...stylex.props(styles.mobilePage)}>{current}</span>
+      <span {...stylex.props(styles.mobilePage)} data-morph="page">
+        {current}
+      </span>
     </p>
   ) : (
     <h1
@@ -458,15 +455,16 @@ const styles = stylex.create({
     },
   },
   homeLayout: {
-    // Desktop: the intro, the lists at their own height, and the room left below them, where the
-    // homepage previews a row's picture (`home.tsx`).
+    // Desktop: the name alone on the first row, then About with the lists beside the sidebar
+    // links, and the room left below them, where the homepage previews a row's picture
+    // (`home.tsx`).
     gridTemplateRows: {
       default: null,
-      [media.desktop]: "auto auto 1fr auto",
+      [media.desktop]: "auto auto auto 1fr",
       [media.mobile]: "auto auto auto minmax(0, 1fr)",
       // Dense: like on phones, the page holds to the viewport and the project list scrolls. The
       // list's row still grows to fit the sidebar links, so those are never cut off.
-      [stylex.when.ancestor("[data-dense]", rootMarker)]: { [media.desktop]: "auto 1fr auto auto" },
+      [stylex.when.ancestor("[data-dense]", rootMarker)]: { [media.desktop]: "auto auto 1fr auto" },
     },
     rowGap: 0,
     paddingBlock: { default: null, [media.desktop]: space.pageInset },
@@ -487,7 +485,7 @@ const styles = stylex.create({
     display: { default: "flex", [media.mobile]: "contents" },
     flexDirection: "column",
   },
-  /** Homepage desktop: sidebar and content share three subgrid rows (intro, lists, footer). */
+  /** Homepage desktop: sidebar and content share four subgrid rows (name, About, lists, room). */
   homeColumn: {
     position: { default: null, [media.desktop]: "static" },
     display: { default: null, [media.desktop]: "grid", [media.mobile]: "contents" },
@@ -525,13 +523,12 @@ const styles = stylex.create({
   /** Case pages' text: `ui.text`, so it follows the reader's font size from tablets up. The
    *  page's name (`case.tsx`) opens it at the page's inset, on the name's row. */
   caseContent: {
+    // The signature's corner (`caseSignature`).
+    position: { default: null, [media.desktop]: "relative" },
     minHeight: "100vh",
   },
   name: {
     lineHeight: space.linkLineHeight,
-    // JavaScript measures the homepage intro and publishes its height, so the sidebar
-    // lines up with the content column on every page.
-    minHeight: { default: `calc(${space.linkLineHeight} * 2)`, [media.mobile]: 0 },
     marginBottom: { default: space.groupGap, [media.mobile]: space.sectionGap },
     alignContent: "start",
     gridColumn: { default: null, [media.mobile]: 1 },
@@ -556,11 +553,6 @@ const styles = stylex.create({
     },
   },
   homeName: {
-    minHeight: {
-      default: null,
-      [media.desktop]: "var(--desktop-intro-height, 0px)",
-      [media.mobile]: 0,
-    },
     gridRow: 1,
     alignSelf: "start",
   },
@@ -573,42 +565,38 @@ const styles = stylex.create({
     position: "absolute",
     inset: 0,
   },
-  /**
-   * The inner pages' name block, on the homepage's baseline: as tall as the homepage's About
-   * section (`--desktop-intro-height`, `align.ts`), so Contact starts on the same line on every
-   * page.
-   */
+  /** Inner pages: the name block, one line on desktop; phones put the page after a bar. */
   caseName: {
     display: "flex",
     flexDirection: { default: "column", [media.mobile]: "row" },
     alignItems: { default: "start", [media.mobile]: "baseline" },
     whiteSpace: "nowrap",
-    minHeight: {
-      default: null,
-      [media.desktop]: `var(--desktop-intro-height, calc(${space.linkLineHeight} * 2 + ${space.linkGap}))`,
-      [media.mobile]: 0,
-    },
-    // The breadcrumb's page name is gone; the block keeps its line, the gap and the margin, so
-    // Contact stays on the row it had when the name carried a page under it.
-    paddingBottom: { default: null, [media.desktop]: space.linkGap },
   },
-  /** Phones: the trail's slash — no state, as the grey name it follows. */
+  /** Phones: the trail's bar — no state, as the grey name it follows. */
   crumb: {
     display: { default: "none", [media.mobile]: "inline" },
     color: colors.tertiary,
     paddingInline: space.unit,
   },
-  /** Phones: the page's name in the pinned trail, after the slash (`Name`). */
+  /** Phones: the page's name in the pinned trail, after the bar (`Name`). */
   mobilePage: {
     display: { default: "none", [media.mobile]: "block" },
     color: colors.primary,
   },
-  /** The signature: the sidebar's foot on desktop; phones put theirs at the page's end. */
+  /** Desktop: the top right corner, on the name's line; phones put theirs at the page's end. */
   signature: {
     display: { default: "none", [media.desktop]: "block" },
-    gridRow: { default: null, [media.desktop]: 4 },
+    gridRow: 1,
+    justifySelf: "end",
+    alignSelf: "start",
     margin: 0,
-    marginTop: { default: null, [media.desktop]: "auto" },
+    whiteSpace: "nowrap",
+  },
+  /** Inner pages: over the content column's padding, as the page's title beside it. */
+  caseSignature: {
+    position: "absolute",
+    top: `calc(${space.pageInset} + ${baseline.label})`,
+    right: 0,
   },
   signatureMobile: {
     display: { default: "block", [media.desktop]: "none" },
@@ -647,7 +635,8 @@ const styles = stylex.create({
       [media.mobile]: "none",
       [stylex.when.ancestor("[data-links-open]", rootMarker)]: { [media.mobile]: "flex" },
     },
-    gridRow: 2,
+    // Desktop: beside About and the lists, so About starts on Contact's line.
+    gridRow: { default: 2, [media.desktop]: "2 / 4" },
     alignSelf: { default: null, [media.desktop]: "start" },
     marginBottom: { default: null, [media.mobile]: space.sectionGap },
   },

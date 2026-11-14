@@ -244,7 +244,6 @@ export const cases: readonly Case[] = [
     ],
     description: "Free geometric display typeface. 96 glyphs, unicase.",
     ogDescription: "Free geometric display typeface. 96 glyphs, unicase.",
-    ogImage: "gil-rodrigues-curves-letterforms-1280.webp",
   },
   {
     slug: "ml7",
@@ -277,22 +276,23 @@ export function caseWork(item: Case) {
   } as const;
 }
 
-/** Software I make. Each has its own host; `gildrb.com/<slug>` redirects there. */
+/** Software I make. Its page is `gildrb.com/<slug>`, unless it has a site of its own. */
 export type Product = Row & {
   slug: string;
-  /** Old slugs; `gildrb.com/<former>` redirects to `home` too. */
+  /** Old slugs; `gildrb.com/<former>` redirects to the product's page. */
   formerSlugs: readonly string[];
   name: string;
-  /** The origin the page lives on; its canonical URL is this origin's root. */
-  home: `https://${string}`;
-  /** Hosts that redirect to `home`, keeping the path (`worker/products.ts`). */
+  /**
+   * Hosts that redirect to the product's page (`worker/products.ts`): `/install` to its
+   * installer path on a built page, any other path to the page; an own site keeps the path.
+   */
   aliases: readonly string[];
   /**
-   * Who serves `home`. `Built`: this site, from `src/content/<slug>.md`, through the products
-   * Worker. `Own`: a site of its own, elsewhere (eukhe.com is gildrb/eukhe-site); this site only
-   * links and redirects there.
+   * Who serves the page. `Built`: this site, at `gildrb.com/<slug>`, from
+   * `src/content/<slug>.md`. `Own`: a site of its own at `home`, elsewhere (eukhe.com is
+   * gildrb/eukhe-site); this site only links and redirects there.
    */
-  site: "Built" | "Own";
+  site: { $: "Built" } | { $: "Own"; home: `https://${string}` };
   /** Tab and search title: what it does, in the words people search for. */
   headline: string;
   repository: `https://github.com/${string}`;
@@ -302,8 +302,8 @@ export type Product = Row & {
   /** Archetypon also runs on its page; the others only describe themselves. */
   converter: boolean;
   /**
-   * A `curl … | sh` installer behind the home host: `/install` always, and `/` for clients that
-   * do not ask for HTML.
+   * A `curl … | sh` installer behind the page: `<page>/install` always, and the page for clients
+   * that ask for neither HTML nor Markdown.
    */
   installer: { $: "None" } | { $: "Script"; url: `https://${string}` };
 };
@@ -318,9 +318,8 @@ export const products: readonly Product[] = [
     descriptor: "Coding agent",
     group: { $: "Projects", platform: "macOS, Linux" },
     links: [],
-    home: "https://eukhe.com",
     aliases: ["eukhe.gildrb.com"],
-    site: "Own",
+    site: { $: "Own", home: "https://eukhe.com" },
     headline: "Eukhe: a coding agent that remembers every chat",
     description: "eukhe.com: Neovim in the browser, on a proven core.",
     repository: "https://github.com/gildrb/eukhe",
@@ -341,9 +340,8 @@ export const products: readonly Product[] = [
     descriptor: "SVG asset converter",
     group: { $: "Projects", platform: "Browser" },
     links: [],
-    home: "https://archetypon.gildrb.com",
-    aliases: [],
-    site: "Built",
+    aliases: ["archetypon.gildrb.com"],
+    site: { $: "Built" },
     headline: "Archetypon: convert SVG to PNG, ICO, WebP, JPEG and PDF in your browser",
     description: "SVG export tool: interface and engine, in the browser.",
     repository: "https://github.com/gildrb/archetypon",
@@ -361,9 +359,8 @@ export const products: readonly Product[] = [
     descriptor: "Remote dev servers",
     group: { $: "Projects", platform: "macOS, Linux" },
     links: [],
-    home: "https://porthmeus.com",
-    aliases: ["www.porthmeus.com", "poros.gildrb.com"],
-    site: "Built",
+    aliases: ["porthmeus.com", "www.porthmeus.com", "porthmeus.gildrb.com", "poros.gildrb.com"],
+    site: { $: "Built" },
     headline: "Porthmeus: open your server's dev server on your Mac or phone over Tailscale",
     description: "One command, one private HTTPS link to a dev server.",
     repository: "https://github.com/gildrb/porthmeus",
@@ -377,15 +374,20 @@ export const products: readonly Product[] = [
   },
 ];
 
-/** The products whose pages this site builds and the products Worker serves (`site: "Built"`). */
-export const builtProducts = products.filter((product) => product.site === "Built");
+/** The products whose pages this site builds (`site: "Built"`). */
+export const builtProducts = products.filter((product) => product.site.$ === "Built");
+
+/** A product's page: `https://gildrb.com/<slug>` when built here, its own site's root if not. */
+export function productUrl(product: Product): string {
+  return product.site.$ === "Built" ? `${origin}/${product.slug}` : `${product.site.home}/`;
+}
 
 /** Projects that live elsewhere: their rows link out instead of to a case study. */
 const externals: readonly External[] = [];
 
 /**
- * `external`: the row leaves Gil's own pages (underlined title). Products live on their own
- * hosts but are his pages too, so they read as subpages (no underline). `slug`: its page's
+ * `external`: the row leaves Gil's own pages (underlined title). Products with a site of their
+ * own are his pages too, so they read as subpages (no underline). `slug`: its page's
  * `src/content/<slug>.md`, where it has one here; null for projects that live elsewhere.
  */
 export type Project = Row & { href: string; external: boolean; slug: string | null };
@@ -398,7 +400,11 @@ export const projects: readonly Project[] = [
   ...cases
     .filter((item) => item.listed)
     .map((item) => ({ ...item, href: `/${item.slug}`, external: false })),
-  ...products.map((item) => ({ ...item, href: `${item.home}/`, external: false })),
+  ...products.map((item) => ({
+    ...item,
+    href: item.site.$ === "Built" ? `/${item.slug}` : productUrl(item),
+    external: false,
+  })),
   ...externals.map((item) => ({ ...item, external: true, slug: null })),
 ].toSorted(
   (left, right) =>

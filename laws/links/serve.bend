@@ -578,7 +578,7 @@ def Res.files(+s: List<&2, List<&2, LCp>>) -> List<&2, String>:
 
 # A4: the paths functions/ serves, as keys
 def Fn.routes() -> List<&2, String>:
-  ["mcp", "mcp/server-card", ".well-known/mcp", "api", "api/v1", "api/profile", "api/v1/profile", "api/status", "api/v1/status"]
+  ["mcp", "mcp/server-card", ".well-known/mcp", "api", "api/v1", "api/profile", "api/v1/profile", "api/status", "api/v1/status", "porthmeus/install"]
 
 # Terms: _redirects
 # -----------------

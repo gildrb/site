@@ -233,14 +233,13 @@ def Sitemap.at(b: Bool, url: String, rest: List<&2, String>) -> List<&2, String>
     case False{}:
       rest
 
-# the URL (Url.of) of every indexable page whose host is gildrb.com
+# the URL (Url.of) of every indexable page
 def Sitemap.urls(ps: List<&2, String>) -> List<&2, String>:
   match ps:
     case Nil{}:
       []
     case Con{+p, t}:
-      +u = Meta.Url.of(p)
-      Sitemap.at(Bool.not(Meta.Url.lost(p)) && Laws.Spec.starts(Meta.Url.root(), u), u, Sitemap.urls(t))
+      Sitemap.at(Bool.not(Meta.Url.lost(p)), Meta.Url.of(p), Sitemap.urls(t))
 
 # every x of xs is in ys
 def Each.in(xs: List<&2, String>, +ys: List<&2, String>) -> Bool:
@@ -411,7 +410,7 @@ def Hx.one(+r: String, +c: String) -> Bool:
 # rule path r matches a path the page p is served at: "/" and p
 # ("/about.html", "/index.html"), or its URL's path ("/about", "/")
 def Hx.page(+r: String, +p: String) -> Bool:
-  Hx.wild(r) || Hx.one(r, Laws.Low.go(String.append("/", p))) || Hx.one(r, Laws.Low.go(String.append("/", String.drop(Meta.Url.site(p), 19n))))
+  Hx.wild(r) || Hx.one(r, Laws.Low.go(String.append("/", p))) || Hx.one(r, Laws.Low.go(String.append("/", String.drop(Meta.Url.of(p), 19n))))
 
 # rule path r (trimmed, ASCII lower case) matches an indexable page of ps
 def Hx.any(ps: List<&2, String>, +r: String) -> Bool:
@@ -495,10 +494,9 @@ def Headers.ok(m: Maybe<&2, List<&2, String>>, +ps: List<&2, String>) -> Bool:
 # other "<?", no "<!", no "&", no prefixed tag name ("x:"), loc tags only
 # exactly "<loc>" and "</loc>" (no attributes, white space or "<loc/>"),
 # no tag inside a loc; and the texts of its loc elements, exactly as
-# written, are exactly the URLs (Url.of) of the HTML pages but 404.html
-# whose URL is on https://gildrb.com/, each once and nothing else (order
-# free). With the law canonical, these are the pages' canonical hrefs; the
-# product pages, on their own hosts, are left out. And _headers is in
+# written, are exactly the URLs (Url.of) of the HTML pages but 404.html,
+# each once and nothing else (order free). With the law canonical, these
+# are the pages' canonical hrefs. And _headers is in
 # dist/ and adds no X-Robots-Tag whose directives (split at commas and
 # ASCII white space, ASCII case-insensitive) include noindex or none
 # under a rule whose path matches a path an HTML page but 404.html is

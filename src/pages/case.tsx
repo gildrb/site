@@ -3,7 +3,7 @@ import { ArchiveGrid, type Work } from "../archive.tsx";
 import { SourcesLine } from "../aside.tsx";
 import { Island } from "../island.tsx";
 import { Converter } from "../islands/archetypon.tsx";
-import { Article, demos, parse, sizesFor, sources } from "../markdown.tsx";
+import { Article, demos, leadOf, parse, sizesFor, sources } from "../markdown.tsx";
 import {
   type Assets,
   Document,
@@ -15,6 +15,7 @@ import {
   Sidebar,
 } from "../layout.tsx";
 import { Row } from "../row.tsx";
+import { livePreviews } from "./home.tsx";
 import {
   type Case,
   cases,
@@ -23,7 +24,7 @@ import {
   pages,
   person,
   type Product,
-  products,
+  productUrl,
   type Project,
   projects,
 } from "../site.ts";
@@ -109,7 +110,9 @@ function Frame({
           <PageLinks />
         </Sidebar>
         <Main>
-          <Title {...stylex.props(ui.heading, styles.pageTitle)}>{current}</Title>
+          <Title {...stylex.props(ui.heading, styles.pageTitle)} data-morph="page">
+            {current}
+          </Title>
           {children}
         </Main>
       </Shell>
@@ -217,6 +220,7 @@ export function CasePage({
           markdown={markdown}
           eager
           reading
+          lead={leadOf(markdown, livePreviews)}
           codeLine={
             item.repository === null ? null : (
               <SourcesLine links={[{ label: "Source code", href: item.repository }]} />
@@ -232,12 +236,10 @@ export function CasePage({
 
 /**
  * The three projects after this one in the homepage's order, wrapping round to the newest;
- * external projects are left out unless they are products, whose pages live on their own hosts.
+ * external projects are left out. Products are not external, even with a site of their own.
  */
 function next(href: string): Project[] {
-  const own = projects.filter(
-    (project) => !project.external || products.some(({ home }) => `${home}/` === project.href),
-  );
+  const own = projects.filter((project) => !project.external);
   const at = own.findIndex((project) => project.href === href);
   return [1, 2, 3]
     .map((step) => own[(at + step) % own.length])
@@ -298,11 +300,13 @@ const styles = stylex.create({
     color: colors.primary,
     textDecoration: "none",
     lineHeight: space.linkLineHeight,
-    // The article keeps its start row below: the one where Contact starts (`layout.tsx`).
+    // As wide as its text, as the row's title it travels from (`morph.ts`).
+    alignSelf: "start",
+    // The article starts on Contact's line, one empty line below the name's (`layout.tsx`).
     display: { default: "block", [media.mobile]: "none" },
     marginBottom: {
       default: space.sectionContentGap,
-      [media.desktop]: `calc(9 * ${space.unit})`,
+      [media.desktop]: `calc(5 * ${space.unit})`,
     },
   },
   phoneItem: {
@@ -373,8 +377,7 @@ export function DocPage({
 }
 
 /**
- * A product, served on its own host (see `worker/products.ts`): an article on what it solves,
- * with Archetypon's converter right after the opening.
+ * A product: an article on what it solves, with Archetypon's converter right after the opening.
  */
 export function ProductPage({
   assets,
@@ -385,8 +388,8 @@ export function ProductPage({
   item: Product;
   markdown: string;
 }) {
-  const url = `${item.home}/`;
-  const others = next(url);
+  const url = productUrl(item);
+  const others = next(`/${item.slug}`);
   return (
     <Frame
       assets={assets}

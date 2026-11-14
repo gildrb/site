@@ -1,4 +1,4 @@
-import { builtProducts, origin, pages, products, slugs } from "../src/site.ts";
+import { builtProducts, origin, pages, productUrl, products, slugs } from "../src/site.ts";
 import {
   apiHeaders,
   canonicalHost,
@@ -18,18 +18,29 @@ const markdown = new Map([
 ]);
 
 /**
- * Product pages live on their own hosts. On gildrb.com their old paths (and those of their former
- * slugs) redirect there; the products Worker (`worker/products.ts`) still reads them from the
- * Pages deployment's own host.
+ * Old product paths on gildrb.com: a built product's former slugs redirect to its page here, and
+ * a product with a site of its own (`site: "Own"`) is linked and redirected there.
  */
-const productHomes = new Map(
-  products.flatMap(({ slug, formerSlugs, home }): [string, string][] =>
-    [slug, ...formerSlugs].flatMap((name) =>
-      [`/${name}`, `/${name}/`, `/${name}.html`].map((path): [string, string] => [
+const productMoves = new Map(
+  products.flatMap((product): [string, string][] =>
+    (product.site.$ === "Built" ? product.formerSlugs : [product.slug, ...product.formerSlugs])
+      .flatMap((name) => [`/${name}`, `/${name}/`, `/${name}.html`, `/${name}/install`])
+      .map((path): [string, string] => [
         path,
-        `${home}/`,
+        product.site.$ === "Built" && path.endsWith("/install")
+          ? `${productUrl(product)}/install`
+          : productUrl(product),
       ]),
-    ),
+  ),
+);
+
+/**
+ * Installers behind built product pages: `/<slug>/install` always, and `/<slug>` for clients
+ * that ask for neither HTML nor Markdown, as `curl … | sh` does.
+ */
+const installers = new Map(
+  builtProducts.flatMap(({ slug, installer }): [string, string][] =>
+    installer.$ === "Script" ? [[`/${slug}`, installer.url]] : [],
   ),
 );
 const siteHost = new URL(origin).hostname;
@@ -93,10 +104,18 @@ export const onRequest: PagesFunction<Env> = async ({ env, request, next }) => {
   if (redirect) return redirect;
   const url = new URL(request.url);
   const { pathname } = url;
-  const home = url.hostname === siteHost ? productHomes.get(pathname) : undefined;
-  if (home) return Response.redirect(home, 301);
-  // Plain page and file requests go straight to static serving; only Markdown negotiation,
-  // aliases and the API need the work below.
+  const moved = url.hostname === siteHost ? productMoves.get(pathname) : undefined;
+  if (moved) return Response.redirect(moved, 301);
+  const installer =
+    url.hostname === siteHost ? installers.get(pathname.replace(/\/install$/, "")) : undefined;
+  if (installer) {
+    // A browser asks for HTML and an agent for Markdown, and both get the page.
+    const accept = request.headers.get("Accept") ?? "";
+    const page = accept.includes("text/html") || accept.includes("text/markdown");
+    if (pathname.endsWith("/install") || !page)
+      return new Response(null, { status: 302, headers: { Location: installer, Vary: "Accept" } });
+  }
+  // Only Markdown negotiation, aliases and the API need the work below.
   const plain =
     !wantsMarkdown(request) &&
     !aliases.has(pathname) &&

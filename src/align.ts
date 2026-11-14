@@ -1,43 +1,13 @@
 /**
- * Aligns layout that CSS alone cannot express, before the first paint and again on resize:
- *
- * - Desktop: sizes the sidebar intro to the homepage summary as it wraps in the content column,
- *   on every page, so the sidebar links line up with the project table and stay put across pages.
- *   Marks short viewports as dense (see below).
- * - Phones: shows the project list's bottom fade in the first frame when it overflows (the
- *   scroll-driven animation takes over from the next frame).
- *
- * Self-contained on purpose: `alignScript` inlines its source at the end of `<body>`.
+ * Aligns what CSS cannot, before the first paint and on resize:
+ * - Desktop: marks short viewports dense.
+ * - Phones: shows the list's bottom fade in the first frame when it overflows; the scroll-driven
+ *   animation takes over after.
+ * Self-contained on purpose: `layout.tsx` inlines its source (`headScript`).
  */
 export function align(): void {
   const body = document.body;
-  const content = document.querySelector("main");
   const sidebarLinks = document.querySelector("aside nav");
-  const measure = document.createElement("canvas").getContext("2d");
-  if (matchMedia("(min-width: 768px)").matches && content && sidebarLinks && measure) {
-    const style = getComputedStyle(sidebarLinks);
-    measure.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-    const width = content.getBoundingClientRect().width;
-    let line = "";
-    let lines = 1;
-    for (const word of (body.dataset.intro ?? "").split(/\s+/)) {
-      const next = line ? `${line} ${word}` : word;
-      if (line && measure.measureText(next).width > width) {
-        lines += 1;
-        line = word;
-      } else {
-        line = next;
-      }
-    }
-    // The one-line gap under the intro (`space.linkGap`, half a rem), in pixels.
-    const gap = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) / 2;
-    body.style.setProperty(
-      "--desktop-intro-height",
-      `${(lines + 1) * Number.parseFloat(style.lineHeight) + gap}px`,
-    );
-  } else {
-    body.style.removeProperty("--desktop-intro-height");
-  }
 
   // Desktop, short viewports: on the homepage the page holds to the viewport and the project
   // list scrolls instead, as on phones, once its content would overflow it (`data-dense`). When

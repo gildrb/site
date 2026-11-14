@@ -842,6 +842,6 @@ law home_text:
 # meter, matched by name whatever constructor the lexer gives it, open
 # dialog and details included (a browser does not show it, or not without
 # a click), so the text home_text counts is shown; text hidden by CSS is
-# NOT checked (A3) (R2).
+# NOT checked (A5) (R2).
 law home_shown:
   {Spec.shown(Laws.Spec.page("index.html")) == True{} : Bool}

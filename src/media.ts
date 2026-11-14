@@ -83,41 +83,11 @@ export const media: Readonly<Record<string, Media>> = {
     height: 443,
     mark: "center",
   },
-  "curves-letterforms": {
-    alt: "Geometric CURVES glyphs arranged as a black and white letterform study",
+  "curves-poster": {
+    alt: "CURVES specimen poster: the wordmark, the unicase alphabet, numerals, punctuation and a sample line",
     archive: true,
-    width: 2973,
-    height: 2093,
-  },
-  "curves-numerals": {
-    alt: "CURVES numerals with diagonal forms and a slashed zero",
-    archive: true,
-    width: 2973,
-    height: 2000,
-  },
-  "curves-punctuation": {
-    alt: "CURVES punctuation math signs currency symbols and accented characters",
-    archive: true,
-    width: 2973,
-    height: 3100,
-  },
-  "curves-specimen": {
-    alt: "CURVES type specimen showing the display face in a large editorial setting",
-    archive: true,
-    width: 2973,
-    height: 1583,
-  },
-  "curves-uppercase": {
-    alt: "Full unicase CURVES alphabet showing repeated geometric letter construction",
-    archive: true,
-    width: 2973,
-    height: 4010,
-  },
-  "curves-wordmark": {
-    alt: "CURVES wordmark set in the geometric display typeface",
-    archive: true,
-    width: 2973,
-    height: 850,
+    width: 2800,
+    height: 15431,
   },
   "filen-app-icon": {
     alt: "Filen app icon using a dimensional rendering of the identity mark",

@@ -9,9 +9,9 @@ I design interfaces and build them to production myself: brand, type, layout and
 What that looks like:
 
 - [Eukhe](https://eukhe.com/): eukhe.com, Neovim in the browser on a core with proven laws.
-- [Archetypon](https://archetypon.gildrb.com/): an SVG export tool, interface and engine, in the browser. No upload.
+- [Archetypon](/archetypon): an SVG export tool, interface and engine, in the browser. No upload.
 - [Elpis](/elpis): the fastest 4-bit Qwen3.8-27B on one RTX 3090.
-- [Porthmeus](https://porthmeus.com/): one command, one private HTTPS link to a dev server.
+- [Porthmeus](/porthmeus): one command, one private HTTPS link to a dev server.
 
 Before that: brand and website for Introspectum as the designer on its founding team, and brand, type and identity work for clients, shipped. Each project on the [homepage](/) has a page on what I made and how; the [archive](/all) shows all of it at once.
 

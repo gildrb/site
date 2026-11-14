@@ -13,33 +13,18 @@ import ./base/html/refs.bend as R
 import ./base/page.bend as Laws
 import ../build/site.bend as S
 
-# Terms: a page's URL (R5, A3)
-# ----------------------------
+# Terms: a page's URL (R5)
+# ------------------------
 
 def Url.root() -> String:
   "https://gildrb.com/"
 
-# A3: the product pages and the host each is served on
-# (worker/products.ts sites)
-def Url.product(+path: String) -> Maybe<&2, String>:
-  Bool.pick(Maybe<&2, String>, String.eq(path, "archetypon.html"), Some{"https://archetypon.gildrb.com/"}, Bool.pick(Maybe<&2, String>, String.eq(path, "porthmeus.html"), Some{"https://porthmeus.com/"}, None{}))
-
-# a page of gildrb.com by its path: "index.html" -> "/", "D/index.html"
-# -> "/D/" (Cloudflare Pages serves a folder's index at the folder),
-# "P.html" -> "/P" (its pretty URL)
-def Url.site(+path: String) -> String:
-  Bool.pick(String, String.eq(path, "index.html") || String.ends_with(path, "/index.html"), String.append(Url.root(), String.reverse(String.drop(String.reverse(path), 10n))), Bool.pick(String, String.ends_with(path, ".html"), String.append(Url.root(), String.reverse(String.drop(String.reverse(path), 5n))), String.append(Url.root(), path)))
-
-def Url.pick(m: Maybe<&2, String>, path: String) -> String:
-  match m:
-    case Some{u}:
-      u
-    case None{}:
-      Url.site(path)
-
-# the URL the page at path is served at: its canonical URL (R5)
+# the URL the page at path is served at, its canonical URL (R5): a page
+# of gildrb.com by its path: "index.html" -> "/", "D/index.html" -> "/D/"
+# (Cloudflare Pages serves a folder's index at the folder), "P.html" ->
+# "/P" (its pretty URL)
 def Url.of(+path: String) -> String:
-  Url.pick(Url.product(path), path)
+  Bool.pick(String, String.eq(path, "index.html") || String.ends_with(path, "/index.html"), String.append(Url.root(), String.reverse(String.drop(String.reverse(path), 10n))), Bool.pick(String, String.ends_with(path, ".html"), String.append(Url.root(), String.reverse(String.drop(String.reverse(path), 5n))), String.append(Url.root(), path)))
 
 # the one page exempt from R5-R8
 def Url.lost(path: String) -> Bool:
@@ -451,9 +436,8 @@ def Snip.ok(m: Maybe<&2, List<&2, Snip>>) -> Bool:
 # in the head, or text that is not white space), and its href (the first,
 # decoded) is exactly the page's URL (Url.of): index.html ->
 # https://gildrb.com/, D/index.html -> https://gildrb.com/D/, P.html ->
-# https://gildrb.com/P, and the product pages on their own host (A3):
-# archetypon.html -> https://archetypon.gildrb.com/, porthmeus.html ->
-# https://porthmeus.com/; and no meta start tag anywhere in the page
+# https://gildrb.com/P (product pages too: archetypon.html ->
+# https://gildrb.com/archetypon); and no meta start tag anywhere in the page
 # whose name (ASCII case-insensitive, trimmed) is "robots" or "googlebot"
 # has content whose directives (split at commas and ASCII white space,
 # ASCII case-insensitive) include noindex or none (Index.out). 404.html

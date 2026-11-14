@@ -1,7 +1,7 @@
-// Product pages on their own hosts; see products.ts. Deploy: `npx wrangler deploy -c worker/wrangler.jsonc`.
-// eukhe.com and www.eukhe.com belong to the eukhe-site Worker (repo gildrb/eukhe-site); this one
-// keeps eukhe.gildrb.com, which redirects there. www.porthmeus.com and the old poros.gildrb.com
-// redirect to porthmeus.com.
+// Product alias hosts, redirected to the product's page; see products.ts. Deploy:
+// `npx wrangler deploy -c worker/wrangler.jsonc`. Porthmeus and Archetypon live at
+// gildrb.com/porthmeus and gildrb.com/archetypon. eukhe.com and www.eukhe.com belong to the
+// eukhe-site Worker (repo gildrb/eukhe-site); this one keeps eukhe.gildrb.com, which redirects there.
 {
   "name": "gildrb-products",
   "main": "products.ts",
@@ -12,6 +12,7 @@
     { "pattern": "porthmeus.com", "custom_domain": true },
     { "pattern": "www.porthmeus.com", "custom_domain": true },
     { "pattern": "poros.gildrb.com", "custom_domain": true },
+    { "pattern": "porthmeus.gildrb.com", "custom_domain": true },
     { "pattern": "eukhe.gildrb.com", "custom_domain": true },
   ],
 }

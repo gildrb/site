@@ -179,9 +179,8 @@ const styles = stylex.create({
   summary: {
     maxWidth: space.contentColumn,
     gridColumn: { default: null, [media.mobile]: "1 / -1" },
-    gridRow: { default: null, [media.desktop]: 1, [media.mobile]: 3 },
+    gridRow: { default: null, [media.desktop]: 2, [media.mobile]: 3 },
     alignSelf: { default: null, [media.desktop]: "start" },
-    minHeight: { default: null, [media.desktop]: "var(--desktop-intro-height, 0px)" },
     // Phones: the table's label baseline two line intervals (64px) below the About line's, as on
     // desktop; the label's own touch inset is part of that distance.
     marginBottom: {
@@ -197,7 +196,7 @@ const styles = stylex.create({
   /**
    * Phones: a part of the About sentence that never breaks inside, so the sentence wraps between
    * its parts ("… at Sybil Solutions," then "based in Germany.") and no line ends on a lone word.
-   * Desktop wraps word by word, as `align.ts` measures it.
+   * Desktop wraps word by word.
    */
   whole: { whiteSpace: { default: null, [media.mobile]: "nowrap" } },
   /**
@@ -207,7 +206,7 @@ const styles = stylex.create({
    */
   previews: {
     display: { default: "none", [media.desktop]: "block" },
-    gridRow: 3,
+    gridRow: 4,
     position: "relative",
     minHeight: 0,
     // The pictures never size the page: the room is what the layout leaves.

@@ -9,6 +9,7 @@
 
 import * as stylex from "@stylexjs/stylex";
 import { h, render } from "preact";
+import { previewFrame, previewGrid } from "./preview-frame.ts";
 import { ui } from "./ui.tsx";
 
 /** One row's picture, as `home.tsx` writes it into the page's head. */
@@ -22,13 +23,7 @@ const desktop = matchMedia("(min-width: 768px)");
 const hover = matchMedia("(hover: hover)");
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
-/** The 8px grid (`tokens.stylex.ts`) and the four fields of the text column (496px). */
-const unit = 8;
-const column = 4 * 14 * unit + 3 * 2 * unit;
-/** The shared frame, height over width: 16:10, near most of the pictures (3:2 to 16:9). */
-const ratio = 10 / 16;
-
-/** `animate`: plays or pauses a picture that moves (a recording, the specimen); null for a still. */
+/** `animate` plays or pauses a moving picture (a recording, the specimen); null for a still. */
 type Picture = { box: HTMLElement; data: PreviewData; animate: ((on: boolean) => void) | null };
 
 export function enablePreview(): void {
@@ -47,16 +42,12 @@ export function enablePreview(): void {
   let current: Picture | undefined;
 
   const place = () => {
-    const box = area.getBoundingClientRect();
-    const top = Math.ceil(box.top / unit) * unit;
-    const room = Math.floor(box.bottom / unit) * unit - top;
-    const width = Math.min(column, box.width);
-    const height = Math.round((width * ratio) / unit) * unit;
-    fits = desktop.matches && height <= room;
-    for (const { box: frame } of pictures.values()) {
-      frame.style.top = `${top - box.top}px`;
-      frame.style.width = `${width}px`;
-      frame.style.height = `${height}px`;
+    const frame = previewFrame(area.getBoundingClientRect(), previewGrid);
+    fits = desktop.matches && frame.fits;
+    for (const { box } of pictures.values()) {
+      box.style.top = `${frame.top}px`;
+      box.style.width = `${frame.width}px`;
+      box.style.height = `${frame.height}px`;
     }
     update();
   };
@@ -117,6 +108,8 @@ export function enablePreview(): void {
     for (const item of data) {
       const box = document.createElement("div");
       box.className = stylex.props(styles.preview).className ?? "";
+      // The picture a page's title takes along when the row opens (`morph.ts`).
+      box.dataset.morphImage = "";
       // Decoration only: nothing in it takes focus or the pointer.
       box.inert = true;
       const picture: Picture = { box, data: item, animate: null };
@@ -193,7 +186,7 @@ async function fill(picture: Picture): Promise<boolean> {
       image.className = className;
       image.alt = "";
       image.decoding = "async";
-      image.sizes = `${box.offsetWidth || column}px`;
+      image.sizes = `${box.offsetWidth || previewGrid.column}px`;
       if (data.srcset !== null) image.srcset = data.srcset;
       image.src = data.src;
       box.append(image);

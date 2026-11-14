@@ -1,5 +1,6 @@
 import {
   about,
+  builtProducts,
   cases,
   caseWork,
   contacts,
@@ -7,6 +8,7 @@ import {
   origin,
   pages,
   person,
+  productUrl,
   products,
   profiles,
   projects,
@@ -48,7 +50,7 @@ export const profile = {
       about: { "@id": url("/#person") },
       hasPart: [
         ...cases.map(({ slug }) => ({ "@id": url(`/${slug}#case-study`) })),
-        ...products.map(({ home }) => ({ "@id": `${home}/#software` })),
+        ...products.map((item) => ({ "@id": `${productUrl(item)}#software` })),
       ],
     },
     {
@@ -94,8 +96,8 @@ export const profile = {
     })),
     ...products.map((item) => ({
       "@type": "SoftwareApplication",
-      "@id": `${item.home}/#software`,
-      url: `${item.home}/`,
+      "@id": `${productUrl(item)}#software`,
+      url: productUrl(item),
       name: item.name,
       description: item.description,
       applicationCategory: item.category,
@@ -274,13 +276,12 @@ ${cases
 /**
  * Pages for search engines only: the Markdown and machine-readable copies are found through
  * llms.txt and the `alternate` links. Only this host's pages: a sitemap may not list URLs of
- * another host, subdomains included (sitemaps.org), so product pages served on their own host
- * are left to that host.
+ * another host (sitemaps.org), so products with a site of their own are left to it.
  */
 const sitemapUrls = [
   url("/"),
   url("/all"),
-  ...[...cases, ...pages].map(({ slug }) => url(`/${slug}`)),
+  ...[...cases, ...pages, ...builtProducts].map(({ slug }) => url(`/${slug}`)),
 ];
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

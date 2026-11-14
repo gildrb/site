@@ -5,7 +5,7 @@
 Open the dev server of your server on your Mac or phone, through a private HTTPS link on your Tailscale network.
 
 ```sh
-curl -fsSL https://porthmeus.com/install | sh
+curl -fsSL https://gildrb.com/porthmeus/install | sh
 ```
 
 ## Out of reach

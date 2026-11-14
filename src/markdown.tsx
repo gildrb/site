@@ -238,10 +238,12 @@ function Figures({
   items,
   eager,
   banner,
+  lead,
 }: {
   items: { id: string; caption: string }[];
   eager: boolean;
   banner: boolean;
+  lead: string | undefined;
 }) {
   const grid = items.length > 1;
   return (
@@ -254,6 +256,8 @@ function Figures({
             // The demos draw their own frame, rounded with them on small screens.
             banner && !demos.has(id) && styles.frame,
           )}
+          // The homepage previews this picture; it travels with the title (`morph.ts`).
+          data-lead={id === lead || undefined}
         >
           {id === "heph-demo" ? (
             <Island
@@ -453,7 +457,8 @@ function gap(kind: Kind, previous: Kind | null): Spacing | null {
  * (n0thing opens with an image and a part). `codeLine` (the source code) follows it, then `tool`
  * (Archetypon's converter), then the rest; `sourcesLine` (where else the work lives) ends the
  * page. `eager` gives the first image high fetch priority. `reading` (a page with contents): the
- * images a page opens with are a banner, framed by a hairline.
+ * images a page opens with are a banner, framed by a hairline. `lead`: the picture the homepage
+ * previews for this page (`leadOf`).
  */
 export function Article({
   markdown,
@@ -462,6 +467,7 @@ export function Article({
   sourcesLine = null,
   tool = null,
   reading = false,
+  lead,
 }: {
   markdown: string;
   eager: boolean;
@@ -469,6 +475,7 @@ export function Article({
   sourcesLine?: ComponentChildren;
   tool?: ComponentChildren;
   reading?: boolean;
+  lead?: string | undefined;
 }) {
   const { title, blocks } = parse(markdown);
   const found = anchors(blocks);
@@ -556,6 +563,7 @@ export function Article({
                 items={block.items}
                 eager={eager && block === firstMedia}
                 banner={block === banner}
+                lead={lead}
               />
             </div>
           ),
