@@ -12,7 +12,9 @@ export const about = {
   lead: "Design engineer at",
   employer: { label: "Sybil Solutions", href: "https://www.sybilsolutions.ai/" },
   place: "based in Germany.",
-} as const satisfies { lead: string; employer: Link; place: string };
+  /** What the homepage's About shows; metadata keeps the sentence above (`person.about`). */
+  shown: "Designer and programmer based in Germany.",
+} as const satisfies { lead: string; employer: Link; place: string; shown: string };
 
 /**
  * Who this site is about. Keep it to facts that stay true: every page, feed and identity
