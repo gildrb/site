@@ -2,12 +2,13 @@ import * as stylex from "@stylexjs/stylex";
 import type { Work } from "../archive.tsx";
 import { profile } from "../files.ts";
 import { Island } from "../island.tsx";
+import { Email } from "../islands/email.tsx";
 import { Portfolio } from "../islands/portfolio.tsx";
+import { Links } from "../links.tsx";
 import {
   type Assets,
   Document,
   JsonLd,
-  Links,
   Main,
   Name,
   scriptJson,
@@ -16,11 +17,11 @@ import {
 } from "../layout.tsx";
 import { sources } from "../markdown.tsx";
 import { media as artwork } from "../media.ts";
-import { about, developers, origin, person, profiles, projects } from "../site.ts";
+import { about, cases, developers, origin, person, profiles, projects } from "../site.ts";
 import { media, motion, space } from "../tokens.stylex.ts";
 import { ui } from "../ui.tsx";
 import { shareFrame } from "../og.tsx";
-import type { PreviewData } from "../preview.ts";
+import type { Fit, PreviewData } from "../preview.ts";
 import { versioned } from "../versioned.ts";
 
 /** A homepage row's preview: the row's link and its page's lead image or recording (`leadOf`). */
@@ -43,7 +44,15 @@ const alternates: [rel: string, type: string, path: string, title: string][] = [
   ["service-doc", "text/html", `/${developers.slug}`, developers.description],
 ];
 
-function Head({ shareImage, previews }: { shareImage: string; previews: readonly Preview[] }) {
+function Head({
+  shareImage,
+  previews,
+  work,
+}: {
+  shareImage: string;
+  previews: readonly Preview[];
+  work: readonly Work[];
+}) {
   return (
     <>
       <meta name="description" content={description} />
@@ -78,7 +87,7 @@ function Head({ shareImage, previews }: { shareImage: string; previews: readonly
       <script
         type="application/json"
         id="preview-data"
-        dangerouslySetInnerHTML={{ __html: scriptJson(previewData(previews)) }}
+        dangerouslySetInnerHTML={{ __html: scriptJson(previewData(previews, work)) }}
       />
     </>
   );
@@ -97,14 +106,14 @@ export function Home({
     <Document
       assets={assets}
       title={title}
-      head={<Head shareImage={assets.shareImage} previews={previews} />}
+      head={<Head shareImage={assets.shareImage} previews={previews} work={work} />}
       mono={false}
       home
     >
       <Shell home>
         <Sidebar home label={{ "aria-labelledby": "site-title" }}>
           <Name />
-          <Links home />
+          <Links place="Home" email={<Island name="email" component={Email} props={{}} />} />
         </Sidebar>
         <Main home>
           <section {...stylex.props(styles.summary)} aria-labelledby="profile-summary-title">
@@ -143,9 +152,32 @@ function Previews() {
   return <div {...stylex.props(styles.previews)} aria-hidden="true" data-previews />;
 }
 
-/** Each previewed row's picture, as `preview.ts` reads it from `#preview-data`. */
-function previewData(previews: readonly Preview[]): PreviewData[] {
-  return previews.map(({ href, id }) => {
+/**
+ * The Archive row's pictures, in turn, as Gil picked them: presented work (finished marks,
+ * campaigns, a brand board, a construction beside its mark, Heph in use), no scale tests or
+ * editor screenshots; from the work the table does not lead to, alternating projects.
+ */
+const archiveHighlights: readonly { id: string; fit: Fit }[] = [
+  { id: "filen-wordmark", fit: "Cover" },
+  { id: "archive-chrome-chevron", fit: "Contain" },
+  { id: "ben-davis-construction", fit: "Contain" },
+  { id: "archive-raccoon-mascot", fit: "Contain" },
+  { id: "heph-highlight", fit: "Cover" },
+  { id: "archive-book-mark", fit: "Contain" },
+  { id: "filen-zero-knowledge-campaign", fit: "Cover" },
+  { id: "archive-logo-system-card", fit: "Contain" },
+  { id: "filen-brand-system-board", fit: "Cover" },
+  { id: "archive-peaks-mark", fit: "Cover" },
+  { id: "archive-embossed-monogram", fit: "Cover" },
+];
+
+/**
+ * Each previewed row's picture, as `preview.ts` reads it from `#preview-data`, and the Archive
+ * row's highlights. A highlight is archive work, or a picture made for this row that names its
+ * project; either way not of a row the table lists, so no row's pictures repeat under Archive.
+ */
+function previewData(previews: readonly Preview[], work: readonly Work[]): PreviewData[] {
+  const rows: PreviewData[] = previews.map(({ href, id }) => {
     if (id === "curves-demo")
       return { $: "Specimen", href, font: versioned("/fonts/curves.woff2") };
     const item = artwork[id];
@@ -155,14 +187,33 @@ function previewData(previews: readonly Preview[]): PreviewData[] {
       ? { $: "Video", href, poster: src, src: versioned(`/videos/gil-rodrigues-${id}.mp4`) }
       : { $: "Image", href, src, srcset: srcset ?? null };
   });
+  const highlights = archiveHighlights.map(({ id, fit }) => {
+    const piece = work.find((each) => each.id === id);
+    const project =
+      piece === undefined
+        ? cases.find(({ slug }) => slug === artwork[id]?.project)
+        : piece.from.$ === "Case"
+          ? piece.from.project
+          : null;
+    if (project === undefined) {
+      throw new Error(`Archive highlight ${id} is neither archive work nor names its project.`);
+    }
+    if (project?.listed === true) {
+      throw new Error(`Archive highlight ${id} belongs to a row the table lists.`);
+    }
+    const { src, srcset } = sources(id);
+    return { src, srcset: srcset ?? null, fit };
+  });
+  return [...rows, { $: "Cycle", href: "/all", highlights }];
 }
 
 const styles = stylex.create({
+  /** Phones only: desktop starts the table on Contact's line. */
   summary: {
+    display: { default: null, [media.desktop]: "none" },
     maxWidth: space.contentColumn,
     gridColumn: { default: null, [media.mobile]: "1 / -1" },
-    gridRow: { default: null, [media.desktop]: 2, [media.mobile]: 3 },
-    alignSelf: { default: null, [media.desktop]: "start" },
+    gridRow: { default: null, [media.mobile]: 3 },
     // Phones: the table's label baseline two line intervals (64px) below the About line's, as on
     // desktop; the label's own touch inset is part of that distance.
     marginBottom: {
@@ -180,7 +231,7 @@ const styles = stylex.create({
    */
   previews: {
     display: { default: "none", [media.desktop]: "block" },
-    gridRow: 4,
+    gridRow: 3,
     position: "relative",
     minHeight: 0,
     // The pictures never size the page: the room is what the layout leaves.

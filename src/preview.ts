@@ -12,12 +12,30 @@ import { h, render } from "preact";
 import { previewFrame, previewGrid } from "./preview-frame.ts";
 import { ui } from "./ui.tsx";
 
+/** A still picture: its file and, where it has more widths, their set. */
+type Still = { src: string; srcset: string | null };
+
+/**
+ * How an archive picture takes the frame: `Cover` scales full-bleed artwork up to fill it,
+ * cropped about its centre; `Contain` shows a piece on a plain ground whole, the ground carried
+ * on to the frame's edges.
+ */
+export type Fit = "Cover" | "Contain";
+
+/** One of the Archive row's pictures. */
+type Highlight = Still & { fit: Fit };
+
 /** One row's picture, as `home.tsx` writes it into the page's head. */
 export type PreviewData =
-  | { $: "Image"; href: string; src: string; srcset: string | null }
+  | ({ $: "Image"; href: string } & Still)
   | { $: "Video"; href: string; poster: string; src: string }
   /** The CURVES specimen (`islands/curves.tsx`), live, as its case page opens. */
-  | { $: "Specimen"; href: string; font: string };
+  | { $: "Specimen"; href: string; font: string }
+  /** The Archive row: chosen archive pictures, one after another. */
+  | { $: "Cycle"; href: string; highlights: Highlight[] };
+
+/** How long each archive picture stands before the next takes its place. */
+const cycleStep = 650;
 
 const desktop = matchMedia("(min-width: 768px)");
 const hover = matchMedia("(hover: hover)");
@@ -137,12 +155,7 @@ function isPreviewData(value: unknown): value is PreviewData {
   if (!("href" in value) || typeof value.href !== "string" || !("$" in value)) return false;
   switch (value.$) {
     case "Image":
-      return (
-        "src" in value &&
-        typeof value.src === "string" &&
-        "srcset" in value &&
-        (value.srcset === null || typeof value.srcset === "string")
-      );
+      return isStill(value);
     case "Video":
       return (
         "poster" in value &&
@@ -152,9 +165,30 @@ function isPreviewData(value: unknown): value is PreviewData {
       );
     case "Specimen":
       return "font" in value && typeof value.font === "string";
+    case "Cycle":
+      return (
+        "highlights" in value &&
+        Array.isArray(value.highlights) &&
+        value.highlights.length > 0 &&
+        value.highlights.every(
+          (each: unknown) =>
+            isStill(each) && "fit" in each && (each.fit === "Cover" || each.fit === "Contain"),
+        )
+      );
     default:
       return false;
   }
+}
+
+function isStill(value: unknown): value is Still {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "src" in value &&
+    typeof value.src === "string" &&
+    "srcset" in value &&
+    (value.srcset === null || typeof value.srcset === "string")
+  );
 }
 
 /** The row a pointer or focus event happened in: a link in the table, or none. */
@@ -171,24 +205,30 @@ function decoded(image: HTMLImageElement): Promise<boolean> {
   );
 }
 
+/** A still's <img>, fetched at the frame's width. */
+function still({ src, srcset }: Still, box: HTMLElement, className: string): HTMLImageElement {
+  const image = document.createElement("img");
+  image.className = className;
+  image.alt = "";
+  image.decoding = "async";
+  image.sizes = `${box.offsetWidth || previewGrid.column}px`;
+  if (srcset !== null) image.srcset = srcset;
+  image.src = src;
+  return image;
+}
+
 /**
  * Makes a picture's content and waits until it can show without loading anything visibly: an
  * image fetched at the frame's width and decoded; a recording's poster decoded, the recording
- * buffering behind it; the specimen drawn in its own typeface. Moving pictures get their
- * `animate`. Resolves whether it can show.
+ * buffering behind it; the specimen drawn in its own typeface; the archive's pictures, the first
+ * of them decoded. Moving pictures get their `animate`. Resolves whether it can show.
  */
 async function fill(picture: Picture): Promise<boolean> {
   const { box, data } = picture;
   const className = stylex.props(ui.edge, styles.picture).className ?? "";
   switch (data.$) {
     case "Image": {
-      const image = document.createElement("img");
-      image.className = className;
-      image.alt = "";
-      image.decoding = "async";
-      image.sizes = `${box.offsetWidth || previewGrid.column}px`;
-      if (data.srcset !== null) image.srcset = data.srcset;
-      image.src = data.src;
+      const image = still(data, box, className);
       box.append(image);
       return decoded(image);
     }
@@ -225,11 +265,95 @@ async function fill(picture: Picture): Promise<boolean> {
         () => false,
       );
     }
+    case "Cycle": {
+      // Stacked in the frame, one showing at a time, in an order shuffled for each visit. A picture
+      // joins the cycle once decoded, so none shows half-loaded; the first decoded makes the row
+      // ready.
+      const stacked = stylex.props(ui.edge, styles.picture, styles.stacked).className ?? "";
+      const images = shuffled(data.highlights).map((each) => {
+        const image = still(each, box, stacked);
+        box.append(image);
+        return { image, fit: each.fit };
+      });
+      const ready = new Set<HTMLImageElement>();
+      let shown: HTMLImageElement | undefined;
+      const show = (image: HTMLImageElement) => {
+        shown?.style.removeProperty("visibility");
+        image.style.visibility = "visible";
+        shown = image;
+      };
+      const next = () => {
+        const cycle = images.flatMap(({ image }) => (ready.has(image) ? [image] : []));
+        const at = shown === undefined ? -1 : cycle.indexOf(shown);
+        const image = cycle[(at + 1) % cycle.length];
+        if (image !== undefined) show(image);
+      };
+      let timer = 0;
+      picture.animate = (on) => {
+        clearInterval(timer);
+        if (on && !reducedMotion.matches) timer = window.setInterval(next, cycleStep);
+      };
+      return Promise.any(
+        images.map(async ({ image, fit }) => {
+          if (!(await decoded(image))) throw new Error(`Archive picture failed: ${image.src}`);
+          if (fit === "Contain") standOnGround(image);
+          ready.add(image);
+          if (shown === undefined) show(image);
+        }),
+      ).then(
+        () => true,
+        () => false,
+      );
+    }
     default: {
       const _: never = data;
       return _;
     }
   }
+}
+
+/** A copy of `items` in a random order (Fisher–Yates), so every order is as likely. */
+function shuffled<Item>(items: readonly Item[]): Item[] {
+  const order = [...items];
+  for (let index = order.length - 1; index > 0; index -= 1) {
+    const other = Math.floor(Math.random() * (index + 1));
+    const item = order[index];
+    const swap = order[other];
+    if (item === undefined || swap === undefined) continue;
+    order[index] = swap;
+    order[other] = item;
+  }
+  return order;
+}
+
+/**
+ * Shows a picture whole, and carries the colour along its edge on to the frame's, so the frame is
+ * never part empty.
+ */
+function standOnGround(image: HTMLImageElement): void {
+  image.style.objectFit = "contain";
+  const edge = edgeColor(image);
+  if (edge !== null) image.style.backgroundColor = edge;
+}
+
+/** The mean colour of a picture's four corners, drawn small: the ground it stands on. */
+function edgeColor(image: HTMLImageElement): string | null {
+  const size = 8;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d");
+  if (context === null) return null;
+  context.drawImage(image, 0, 0, size, size);
+  const corners = [
+    [0, 0],
+    [size - 1, 0],
+    [0, size - 1],
+    [size - 1, size - 1],
+  ].map(([x = 0, y = 0]) => context.getImageData(x, y, 1, 1).data);
+  const mean = (channel: number) =>
+    Math.round(corners.reduce((sum, pixel) => sum + (pixel[channel] ?? 0), 0) / corners.length);
+  return `rgb(${mean(0)} ${mean(1)} ${mean(2)})`;
 }
 
 const styles = stylex.create({
@@ -251,5 +375,15 @@ const styles = stylex.create({
     height: "100%",
     objectFit: "cover",
     objectPosition: "top",
+  },
+  /**
+   * The archive's pictures, one over another; only the one shown is visible. Cropped about the
+   * centre, where a piece of work sits, or shown whole on its own ground (`fit`).
+   */
+  stacked: {
+    position: "absolute",
+    inset: 0,
+    visibility: "hidden",
+    objectPosition: "center",
   },
 });

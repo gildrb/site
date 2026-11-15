@@ -299,10 +299,16 @@ function morphTransitions(
         transition.skipTransition();
         return;
       }
-      // The list as it was left, so the row is where the reader last saw it.
+      // The list as it was left, so the row is where the reader last saw it. Pages reached from
+      // a page's foot have a row elsewhere in the list: it is brought to the list's middle.
       const list = scroller(own);
       const top = Number(sessionStorage.getItem(`${config.key}:list`));
       if (list && Number.isFinite(top)) list.scrollTop = top;
+      if (list && !onScreen(own)) {
+        const clip = list.getBoundingClientRect();
+        const box = own.getBoundingClientRect();
+        list.scrollTop += box.top - clip.top - (clip.height - box.height) / 2;
+      }
       title = onScreen(own) ? own : null;
       if (note.image === true && title) landed = placeholder(project);
       image = landed;

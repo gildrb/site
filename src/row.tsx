@@ -49,6 +49,13 @@ export function Row({ project, first, home }: { project: Project; first: boolean
         {...untranslated}
       >
         {project.title}
+        {/* A row that leaves gildrb.com says so before the click: Inter's own arrow, in the
+            title's colour. */}
+        {project.href.startsWith("https://") && (
+          <span {...stylex.props(styles.leaves)} aria-hidden="true">
+            ↗
+          </span>
+        )}
       </Title>
       <span {...stylex.props(ui.respondCell, styles.descriptor)} id={`${id}-descriptor`}>
         {group.$ === "Work" ? group.work : project.descriptor}
@@ -105,6 +112,7 @@ const styles = stylex.create({
     outlineOffset: space.focusOffset,
     borderRadius: { default: null, ":focus-visible": `calc(${space.radius} / 2)` },
   },
+  leaves: { marginInlineStart: "0.15em", fontWeight: typeScale.textWeight },
   // A hairline drawn inside the row, so it never adds to the row's height.
   divided: { boxShadow: `inset 0 1px ${colors.hairline}` },
   next: {

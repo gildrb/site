@@ -614,7 +614,7 @@ export const styles = stylex.create({
   part: { fontWeight: typeScale.textWeight },
   /** A step inside a part: running-text size (`ui.text`), set apart by weight. */
   subheading: { fontWeight: typeScale.emphasisWeight },
-  prose: { color: colors.primary, fontWeight: colors.proseWeight },
+  prose: { color: colors.primary, fontWeight: typeScale.textWeight },
   /** The text's width. */
   measure: { maxWidth: space.contentColumn },
   partGap: { marginTop: `calc(2 * ${space.linkLineHeight})` },

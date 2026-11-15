@@ -160,7 +160,7 @@ byCharacter.delete("");
 const first = byCharacter.get("A") ?? 0;
 const drawn = glyphs.flatMap((glyph, index) => (character(glyph) === "" ? [] : [index]));
 // While nobody points at it, the specimen steps through the drawn glyphs this often.
-const stepEvery = 1400;
+const stepEvery = 800;
 
 // The showcase in its own units: 4:3, with the em at 60% of its height and the cap height
 // centred, so every glyph, the tall dollar and the low comma included, stays inside.
@@ -427,7 +427,7 @@ const styles = stylex.create({
     position: "absolute",
     left: "2.2cqw",
     transform: "translateY(-120%)",
-    fontSize: "clamp(9px, 1.25cqw, 13px)",
+    fontSize: "clamp(11px, 1.25cqw, 13px)",
     lineHeight: 1,
     color: colors.tertiary,
   },
@@ -435,7 +435,7 @@ const styles = stylex.create({
     position: "absolute",
     right: "2.2cqw",
     bottom: "2.2cqw",
-    fontSize: "clamp(9px, 1.25cqw, 13px)",
+    fontSize: "clamp(11px, 1.25cqw, 13px)",
     lineHeight: 1,
     fontVariantNumeric: "tabular-nums",
     color: colors.tertiary,
@@ -455,7 +455,7 @@ const styles = stylex.create({
     alignContent: "end",
     columnGap: "3cqw",
     rowGap: "0.4cqw",
-    fontSize: "clamp(10px, 1.6cqw, 16px)",
+    fontSize: "clamp(11px, 1.6cqw, 16px)",
     lineHeight: 1.3,
     boxShadow: grid,
   },
@@ -490,7 +490,10 @@ const styles = stylex.create({
     fontSize: "3.1cqw",
     lineHeight: 1,
   },
+  // A control character's name in its cell. Phones leave it out: at the cell's size it would be
+  // set under 11px, too small to read.
   label: {
+    display: { default: null, [media.mobile]: "none" },
     fontSize: "clamp(7px, 0.95cqw, 11px)",
     lineHeight: 1,
     letterSpacing: "0.02em",

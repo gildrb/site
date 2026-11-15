@@ -11,6 +11,7 @@ import {
   typeScale,
   underline,
 } from "./tokens.stylex.ts";
+import { signature } from "./site.ts";
 
 /** Anything `stylex.props` accepts: a style, `false`, `null`, or a nested array of them. */
 export type Style = stylex.StyleXArray<stylex.CompiledStyles | boolean | null | undefined>;
@@ -251,6 +252,11 @@ export const ui = stylex.create({
     marginInlineEnd: `calc(${figureUnits.afterHyphen} / ${figureUnits.unitsPerEm} * 1em)`,
   },
 });
+
+/** The signature ("© 2026 Gil Rodrigues"), on a label's line. */
+export function Signature({ style }: { style: Style }) {
+  return <p {...stylex.props(ui.label, style)}>{signature}</p>;
+}
 
 /**
  * Sets an ISO date (`2026-09-08`, `2026-09`) in steady columns: tabular digits, proportional

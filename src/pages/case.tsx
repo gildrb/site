@@ -3,17 +3,10 @@ import { ArchiveGrid, type Work } from "../archive.tsx";
 import { SourcesLine } from "../aside.tsx";
 import { Island } from "../island.tsx";
 import { Converter } from "../islands/archetypon.tsx";
+import { Email } from "../islands/email.tsx";
+import { Links } from "../links.tsx";
 import { Article, demos, leadOf, parse, sizesFor, sources } from "../markdown.tsx";
-import {
-  type Assets,
-  Document,
-  JsonLd,
-  Main,
-  Name,
-  PageLinks,
-  Shell,
-  Sidebar,
-} from "../layout.tsx";
+import { type Assets, Document, JsonLd, Main, Name, Shell, Sidebar } from "../layout.tsx";
 import { Row } from "../row.tsx";
 import { livePreviews } from "./home.tsx";
 import {
@@ -107,7 +100,7 @@ function Frame({
           }}
         >
           <Name current={current} />
-          <PageLinks />
+          <Links place="Page" email={<Island name="email" component={Email} props={{}} />} />
         </Sidebar>
         <Main>
           <Title {...stylex.props(ui.heading, styles.pageTitle)} data-morph="page">

@@ -242,20 +242,10 @@ function Page({ css }: { css: string }) {
           <span style={{ ...text, color: color(colors.quaternary), marginTop: pitch }}>Links</span>
           {profiles.map(({ label }) => link(label))}
         </div>
-        {/* About on Contact's line, then the table: Projects, then Work. */}
+        {/* The table on Contact's line: Projects, then Work. */}
         <div
           style={{ display: "flex", flexDirection: "column", width: length(space.contentColumn) }}
         >
-          <span
-            style={{
-              ...text,
-              color: color(colors.secondary),
-              marginBottom: length(space.linkGap),
-            }}
-          >
-            About
-          </span>
-          <span style={{ ...text, marginBottom: length(space.groupGap) }}>{person.about}</span>
           {table}
         </div>
       </div>

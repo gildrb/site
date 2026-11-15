@@ -32,6 +32,9 @@ export const person = {
   about: `${about.lead} ${about.employer.label}, ${about.place}`,
 } as const;
 
+/** The signature on every page, in the build's year. */
+export const signature = `© ${new Date().getFullYear()} ${person.name}`;
+
 export const profiles: readonly Link[] = [
   { label: "Are.na", href: "https://www.are.na/gil-rodrigues-tat8yjcamq4" },
   { label: "GitHub", href: "https://github.com/gildrb" },
@@ -178,7 +181,8 @@ export const cases: readonly Case[] = [
     headline: "Heph: answers from your files, with every quote checked",
     descriptor: "Local document agent",
     group: { $: "Projects", platform: "macOS, Linux" },
-    repository: "https://github.com/gildrb/heph-agent",
+    // The repository is private: a public link would end on GitHub's 404.
+    repository: null,
     links: [],
     description: "Answers from the files in a folder, every quote checked against its source.",
     ogDescription: "Answers from the files in a folder, every quote checked.",

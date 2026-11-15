@@ -126,7 +126,8 @@ export const motion = stylex.defineConsts({
  *
  * Weights: 400 is text; 500 is emphasis, the step Inter's optical size keeps clearly apart from
  * 400 at every size here (the font file carries 380 to 600, see `scripts/inter.py`). Nothing is
- * bolder: on a dark page 600 blooms. The share image (`og.tsx`) draws from a 400-only instance.
+ * bolder (on a dark page 600 blooms) and nothing lighter than 400 (Rauno Freiberg's floor,
+ * github.com/raunofreiberg/interfaces). The share image (`og.tsx`) draws from a 400-only instance.
  */
 export const typeScale = stylex.defineConsts({
   /** Labels: section names (About, Contact, Links), table headers, captions, small print. */
@@ -174,8 +175,8 @@ export const pageColor = { dark: "oklch(15.5% 0.013 55)", light: "oklch(99.5% 0.
  *
  * The text ladder in APCA. Dark, on the page: primary Lc 97, secondary 63, tertiary 45 (WCAG
  * 6.5:1). Light: primary Lc 98, secondary 84, tertiary 73 (WCAG 5.5:1).
- * Light is not a mirror of dark: grey on a light page reads fainter than on a dark one, the
- * reason light prose is heavier too (`proseWeight`).
+ * Light is not a mirror of dark: grey on a light page reads fainter than on a dark one, so the
+ * light greys sit darker.
  */
 export const colors = stylex.defineVars({
   /**
@@ -187,10 +188,11 @@ export const colors = stylex.defineVars({
   primary: { default: "oklch(95% 0.02 85)", [light]: "oklch(21% 0.018 50)" },
   secondary: { default: "oklch(78% 0.035 72)", [light]: "oklch(41% 0.03 55)" },
   /**
-   * The bottom of the text ladder, a rung below tertiary: the labels themselves (About, Contact,
-   * Links, table headers) and other marks that must recede further than any run text does.
+   * The bottom of the text ladder, a rung below tertiary in both themes: the labels themselves
+   * (About, Contact, Links, table headers), and the rows a lit row dims. Each theme sits at the
+   * same distance from its page, so hover reads alike in light and dark.
    */
-  quaternary: { default: "oklch(56% 0.05 60)", [light]: "oklch(35% 0.026 54)" },
+  quaternary: { default: "oklch(56% 0.05 60)", [light]: "oklch(60% 0.03 60)" },
   /** Dates, descriptors, quiet links at rest. */
   tertiary: { default: "oklch(67% 0.042 64)", [light]: "oklch(50% 0.036 58)" },
   /**
@@ -234,7 +236,6 @@ export const colors = stylex.defineVars({
   shadow: { default: "oklch(7% 0.012 50)", [light]: "oklch(15% 0.02 50)" },
   /** Muted text on terminal surfaces: 5.6:1 on the dark terminal, 5.2:1 on the light one. */
   terminalMuted: { default: "oklch(64% 0.04 64)", [light]: "oklch(50% 0.036 58)" },
-  proseWeight: { default: "380", [light]: "400" },
   /**
    * How strong an underline is at rest, as a share of its link's text colour (`ui.outbound`); on
    * hover it is the full colour. Not a mirror, for the reason light prose is heavier: a thin light

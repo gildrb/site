@@ -1,6 +1,6 @@
 /**
  * Answers Heph gave from its own guide (the heph-guide armory), recorded with `heph` from the
- * lean-bend-core branch of github.com/gildrb/heph-agent and qwen3.8-27b on a local server.
+ * lean-bend-core branch of github.com/gildrb/heph (private) and qwen3.8-27b on a local server.
  * Quotes were checked by heph-core; the demo replays them unchanged.
  */
 export type Status = "verified" | "unquoted" | "failed" | "badid";

@@ -58,6 +58,16 @@ export const media: Readonly<Record<string, Media>> = {
     width: 1637,
     height: 1214,
   },
+  /**
+   * The homepage's Archive picture of Heph (`pages/home.tsx`): the window from `heph-terminal` set
+   * over the whole painting at 16:10, built by `scripts/heph-highlight.py`. Not in the archive.
+   */
+  "heph-highlight": {
+    alt: "Heph's glass terminal window over Velázquez's Apollo in the Forge of Vulcan",
+    project: "heph",
+    width: 1600,
+    height: 1000,
+  },
   "heph-session": {
     alt: "Screen recording of Heph in the terminal answering questions about a folder of lecture notes, citing the files behind each answer",
     width: 1080,

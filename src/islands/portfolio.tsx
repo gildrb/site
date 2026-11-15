@@ -1,11 +1,12 @@
 import * as stylex from "@stylexjs/stylex";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Row } from "../row.tsx";
-import { groups, person, projects } from "../site.ts";
+import { groups, projects } from "../site.ts";
 import { colors, listMarker, media, rootMarker, rowMarker, space } from "../tokens.stylex.ts";
-import { Figures, ui } from "../ui.tsx";
+import { Figures, Signature, ui } from "../ui.tsx";
+import { Links } from "../links.tsx";
+import { Email } from "./email.tsx";
 
-const year = new Date().getFullYear();
 /**
  * The homepage table: Projects, then Work, each under a label in the header's place. The second
  * label stands two row pitches below the last row, keeping the 40px rhythm the sidebar aligns
@@ -93,11 +94,12 @@ export function Portfolio({ more }: { more: number }) {
               )}
             </div>
           ))}
+          {/* Phones: Contact and Links at the list's end, so they are reached by scrolling, not by
+              a hidden control; the portfolio is already an island, so the email is a component. */}
+          <Links place="List" email={<Email />} />
         </div>
         {/* Phones: the signature pinned below the scrolling list, one pitch below Archive. */}
-        <p {...stylex.props(ui.label, styles.signature)}>
-          © {year} {person.name}
-        </p>
+        <Signature style={styles.signature} />
       </section>
     </div>
   );
@@ -124,7 +126,7 @@ const styles = stylex.create({
       },
     },
     gridColumn: { default: null, [media.mobile]: "1 / -1" },
-    gridRow: { default: null, [media.mobile]: 4, [media.desktop]: 3 },
+    gridRow: { default: null, [media.mobile]: 4, [media.desktop]: 2 },
     alignSelf: {
       default: null,
       [media.desktop]: "start",

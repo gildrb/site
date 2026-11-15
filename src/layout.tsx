@@ -1,12 +1,9 @@
 import * as stylex from "@stylexjs/stylex";
 import type { ComponentChildren } from "preact";
 import { fontGate } from "./entry.ts";
-import { Island } from "./island.tsx";
-import { Email } from "./islands/email.tsx";
 import { align } from "./align.ts";
 import { morphCss, morphScript } from "./morph.ts";
 import { pageScrollbar } from "./scrollbar.ts";
-import { contacts, type Link, person, profiles } from "./site.ts";
 import { previewScript, themeCss } from "./theme.ts";
 import {
   baseline,
@@ -18,11 +15,8 @@ import {
   space,
   typeScale,
 } from "./tokens.stylex.ts";
-import { type Style, ui, untranslated } from "./ui.tsx";
+import { Signature, ui, untranslated } from "./ui.tsx";
 import { versioned } from "./versioned.ts";
-
-// The signature's year, the build's own.
-const year = new Date().getFullYear();
 
 export type Assets = {
   script: string;
@@ -49,7 +43,9 @@ const globalCss = [
   // Arial (or metric-identical Liberation Sans) scaled to Inter's metrics, so text laid out
   // before the web font arrives does not move when it does.
   '@font-face{font-family:"Inter Fallback";src:local("Arial"),local("Liberation Sans");size-adjust:107.35%;ascent-override:90.24%;descent-override:22.47%;line-gap-override:0%}',
-  "@layer reset{*{margin:0;padding:0;box-sizing:border-box}}",
+  // Headings take their weight from their styles, never the browser's bold: Inter stops at 600,
+  // so a heading left bold, even a hidden one, would be drawn in a faked weight.
+  "@layer reset{*{margin:0;padding:0;box-sizing:border-box}h1,h2,h3,h4,h5,h6{font-weight:inherit}}",
   // The browser's own scrollbar never shows, in any frame: the page keeps one width everywhere
   // and never shifts when it becomes scrollable. The site's own scrollbar takes its place
   // (`scrollbar.ts`), and without JavaScript the page still scrolls by wheel, touch and keys.
@@ -173,7 +169,7 @@ export function Document({
         )}
         <style dangerouslySetInnerHTML={{ __html: `${globalCss}\n${assets.css}` }} />
         <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: headScript }} />
-        {/* After the stylesheet, so the Inter @font-face exists when the gate asks for it. */}
+        {/* After the stylesheet, so the @font-face rules exist when the gate asks for them. */}
         <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: fontGate }} />
         <script type="speculationrules" dangerouslySetInnerHTML={{ __html: speculationRules }} />
         {/* High priority: the page reacts to the pointer (the enlargement) as soon as it shows.
@@ -256,16 +252,9 @@ export function Main({ home = false, children }: { home?: boolean; children: Com
           `display: contents`; this marker can, and being out of flow it takes no grid cell. */}
       <span {...stylex.props(styles.skipTarget)} id="content" tabIndex={-1} />
       {children}
-      {/* Desktop: the signature in the top right corner, on the name's line. Phones: it follows
-          the page's content; the homepage keeps its own, in the table's list (`portfolio.tsx`). */}
-      <p {...stylex.props(ui.label, styles.signature, !home && styles.caseSignature)}>
-        © {year} {person.name}
-      </p>
-      {!home && (
-        <p {...stylex.props(ui.label, styles.signatureMobile)}>
-          © {year} {person.name}
-        </p>
-      )}
+      {/* Phones: the signature follows the page's content; the homepage keeps its own, in the
+          table's list (`portfolio.tsx`). Desktop keeps it in the sidebar (`Links`). */}
+      {!home && <Signature style={styles.signature} />}
     </main>
   );
 }
@@ -297,72 +286,10 @@ export function Name({ current }: { current?: string }) {
       {...stylex.props(ui.heading, styles.name, styles.homeName)}
       id="site-title"
       itemProp="name"
-      // Named by its text alone: the button inside is named after it too and would read twice.
-      aria-labelledby="site-name"
       {...untranslated}
     >
-      <span id="site-name">Gil Rodrigues</span>
-      <button
-        {...stylex.props(ui.reset, ui.focusRing, styles.linksToggle)}
-        type="button"
-        aria-labelledby="site-name"
-        aria-expanded="false"
-        aria-controls="profile-links"
-        data-links-toggle
-      />
+      Gil Rodrigues
     </h1>
-  );
-}
-
-/** On inner pages the links sit in the sidebar on desktop; phones leave them to the homepage. */
-export function PageLinks() {
-  return (
-    <div {...stylex.props(styles.desktopOnly)}>
-      <Links />
-    </div>
-  );
-}
-
-/**
- * Contact, then the profile links: one list above the other on desktop. The homepage's stay
- * hidden on phones until the name is tapped (`links.ts`), then sit right under it, Links on the
- * left and Contact on the right.
- */
-export function Links({ home = false }: { home?: boolean }) {
-  const link = (item: Link, placement: Style, me: boolean) => {
-    return (
-      <a
-        {...stylex.props(ui.quiet, ui.respond, ui.focusRing, styles.link, placement)}
-        href={item.href}
-        rel={me ? "me noopener noreferrer" : "noopener noreferrer"}
-        itemProp={me ? "sameAs" : undefined}
-        {...untranslated}
-      >
-        <span data-nosnippet>{item.label}</span>
-      </a>
-    );
-  };
-  return (
-    <nav
-      {...stylex.props(ui.text, styles.links, home && styles.homeLinks)}
-      id={home ? "profile-links" : undefined}
-      aria-label="Public profiles and contact"
-      data-mobile-links={home || undefined}
-    >
-      <div {...stylex.props(styles.linkGroup)}>
-        <p {...stylex.props(ui.label, styles.label, styles.contactLabel)}>
-          <span data-nosnippet>Contact</span>
-        </p>
-        <Island name="email" component={Email} props={{}} />
-        {contacts.map((item) => link(item, null, false))}
-      </div>
-      <div {...stylex.props(styles.linkGroup, styles.profiles)}>
-        <p {...stylex.props(ui.label, styles.label, styles.profileLabel, styles.profileGroup)}>
-          <span data-nosnippet>Links</span>
-        </p>
-        {profiles.map((item) => link(item, styles.profileGroup, true))}
-      </div>
-    </nav>
   );
 }
 
@@ -455,16 +382,15 @@ const styles = stylex.create({
     },
   },
   homeLayout: {
-    // Desktop: the name alone on the first row, then About with the lists beside the sidebar
-    // links, and the room left below them, where the homepage previews a row's picture
-    // (`home.tsx`).
+    // Desktop: the name alone on the first row, then the lists beside the sidebar links, and the
+    // room left below them, where the homepage previews a row's picture (`home.tsx`).
     gridTemplateRows: {
       default: null,
-      [media.desktop]: "auto auto auto 1fr",
+      [media.desktop]: "auto auto 1fr",
       [media.mobile]: "auto auto auto minmax(0, 1fr)",
       // Dense: like on phones, the page holds to the viewport and the project list scrolls. The
       // list's row still grows to fit the sidebar links, so those are never cut off.
-      [stylex.when.ancestor("[data-dense]", rootMarker)]: { [media.desktop]: "auto auto 1fr auto" },
+      [stylex.when.ancestor("[data-dense]", rootMarker)]: { [media.desktop]: "auto 1fr auto" },
     },
     rowGap: 0,
     paddingBlock: { default: null, [media.desktop]: space.pageInset },
@@ -485,11 +411,11 @@ const styles = stylex.create({
     display: { default: "flex", [media.mobile]: "contents" },
     flexDirection: "column",
   },
-  /** Homepage desktop: sidebar and content share four subgrid rows (name, About, lists, room). */
+  /** Homepage desktop: sidebar and content share three subgrid rows (name, lists, room). */
   homeColumn: {
     position: { default: null, [media.desktop]: "static" },
     display: { default: null, [media.desktop]: "grid", [media.mobile]: "contents" },
-    gridRow: { default: null, [media.desktop]: "1 / 5" },
+    gridRow: { default: null, [media.desktop]: "1 / 4" },
     gridTemplateRows: { default: null, [media.desktop]: "subgrid" },
     height: { default: null, [media.desktop]: "auto" },
     minHeight: { default: null, [media.desktop]: 0 },
@@ -522,11 +448,7 @@ const styles = stylex.create({
   homeContent: { gridColumn: { default: null, [media.desktop]: 2 } },
   /** Case pages' text: `ui.text`, so it follows the reader's font size from tablets up. The
    *  page's name (`case.tsx`) opens it at the page's inset, on the name's row. */
-  caseContent: {
-    // The signature's corner (`caseSignature`).
-    position: { default: null, [media.desktop]: "relative" },
-    minHeight: "100vh",
-  },
+  caseContent: { minHeight: "100vh" },
   name: {
     lineHeight: space.linkLineHeight,
     marginBottom: { default: space.groupGap, [media.mobile]: space.sectionGap },
@@ -541,7 +463,12 @@ const styles = stylex.create({
     // wide, then keeps that color after any tap, so the bar is only as wide as its text. It has
     // no background of its own: content passes behind it and the top bar follows the page. A
     // solid backing was tried: Safari draws the page under its translucent top bar, where no
-    // backing reaches, so content showed above it with a hard cut.
+    // backing reaches, so content showed above it with a hard cut. Instead the letters carry a
+    // soft halo in the page's colour, so the trail stays legible over dark artwork, with no edge.
+    textShadow: {
+      default: null,
+      [media.mobile]: `0 0 1px ${colors.bg}, 0 0 6px ${colors.bg}, 0 0 14px ${colors.bg}`,
+    },
     width: { default: null, [media.mobile]: "fit-content" },
     maxWidth: { default: null, [media.mobile]: "100%" },
     // Phones: the bar's top padding takes the heading's baseline shift (`baseline.heading`, which
@@ -556,15 +483,7 @@ const styles = stylex.create({
     gridRow: 1,
     alignSelf: "start",
   },
-  /**
-   * Phones: laid over the homepage name, so a tap on the name shows or hides Contact and Links
-   * (`links.ts`). Desktop keeps them in the sidebar and has no such button.
-   */
-  linksToggle: {
-    display: { default: "none", [media.mobile]: "block" },
-    position: "absolute",
-    inset: 0,
-  },
+
   /** Inner pages: the name block, one line on desktop; phones put the page after a bar. */
   caseName: {
     display: "flex",
@@ -583,28 +502,12 @@ const styles = stylex.create({
     display: { default: "none", [media.mobile]: "block" },
     color: colors.primary,
   },
-  /** Desktop: the top right corner, on the name's line; phones put theirs at the page's end. */
+  /** Phones: last in the flow, its box ending a touch inset below the text, where the homepage's
+   * signature stands (`portfolio.tsx` `signature`). Desktop keeps it in the sidebar (`Links`). */
   signature: {
-    display: { default: "none", [media.desktop]: "block" },
-    gridRow: 1,
-    justifySelf: "end",
-    alignSelf: "start",
-    margin: 0,
-    whiteSpace: "nowrap",
-  },
-  /** Inner pages: over the content column's padding, as the page's title beside it. */
-  caseSignature: {
-    position: "absolute",
-    top: `calc(${space.pageInset} + ${baseline.label})`,
-    right: 0,
-  },
-  signatureMobile: {
     display: { default: "block", [media.desktop]: "none" },
-    // Phones: last in the flow, under the article and the next projects. Its box ends a touch
-    // inset below the text, as the homepage's does (`portfolio.tsx` `signature`), so at the end of
-    // a page it stands exactly where the homepage's stands.
+
     order: { default: null, [media.mobile]: 6 },
-    margin: 0,
     paddingTop: space.sectionGap,
     paddingBottom: space.touchInset,
     marginTop: { default: null, [media.mobile]: "auto" },
@@ -620,60 +523,5 @@ const styles = stylex.create({
       ":focus-visible": colors.primary,
     },
     textDecoration: "none",
-  },
-  desktopOnly: { display: { default: "contents", [media.mobile]: "none" } },
-  links: {
-    display: "flex",
-    flexDirection: { default: "column", [media.mobile]: "row" },
-    rowGap: space.linkGap,
-    gridColumn: { default: null, [media.mobile]: "1 / -1" },
-  },
-  /** Phones: hidden until the name is tapped (`links.ts`), then right under it, above About. */
-  homeLinks: {
-    display: {
-      default: "flex",
-      [media.mobile]: "none",
-      [stylex.when.ancestor("[data-links-open]", rootMarker)]: { [media.mobile]: "flex" },
-    },
-    // Desktop: beside About and the lists, so About starts on Contact's line.
-    gridRow: { default: 2, [media.desktop]: "2 / 4" },
-    alignSelf: { default: null, [media.desktop]: "start" },
-    marginBottom: { default: null, [media.mobile]: space.sectionGap },
-  },
-  /**
-   * Desktop: one list, as if ungrouped. Phones: side by side; Contact takes the rest of the row
-   * after Links (`profiles`).
-   */
-  linkGroup: {
-    display: { default: "contents", [media.mobile]: "flex" },
-    flexDirection: "column",
-    rowGap: space.linkGap,
-    flex: { default: null, [media.mobile]: "1 1 0" },
-    minWidth: 0,
-  },
-  /** Phones: Links first, on the left half; Contact takes the right half. */
-  profiles: {
-    order: { default: null, [media.mobile]: -1 },
-    flex: { default: null, [media.mobile]: "0 0 50%" },
-  },
-  label: { width: "fit-content" },
-  profileLabel: { marginTop: { default: null, [media.desktop]: space.sidebarBaselinePitch } },
-  /** Compact (a dense homepage too short for the whole sidebar, see `align.ts`): contact stays. */
-  profileGroup: {
-    display: {
-      default: null,
-      [stylex.when.ancestor("[data-compact]", rootMarker)]: { [media.desktop]: "none" },
-    },
-  },
-  link: {
-    paddingBlock: `calc(${space.linkGap} / 2)`,
-    marginBlock: `calc(${space.linkGap} / -2)`,
-  },
-  contactLabel: {
-    marginTop: {
-      default: `calc(${space.sectionGap} - ${space.sectionContentGap})`,
-      [media.desktop]: 0,
-      [media.mobile]: 0,
-    },
   },
 });

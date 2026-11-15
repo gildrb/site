@@ -6,12 +6,10 @@ import { Portfolio } from "./islands/portfolio.tsx";
 import { compareRows, origin, type SortDirection, type SortKey } from "./site.ts";
 import { loadPagesAhead } from "./ahead.ts";
 import { enableKeys } from "./keys.ts";
-import { toggleLinks } from "./links.ts";
 import { enablePreview } from "./preview.ts";
 import { autoplayVideos } from "./video.ts";
 import { enableZoom } from "./zoom.ts";
 
-toggleLinks();
 enableZoom();
 autoplayVideos();
 loadPagesAhead();
@@ -205,7 +203,7 @@ if (document.getElementById("site-title")) {
     event.preventDefault();
     const items = [
       ...document.querySelectorAll<HTMLElement>(
-        "[data-mobile-links] a[href], [data-mobile-links] button, aside button",
+        "[data-home-links] a[href], [data-home-links] button",
       ),
       ...document.querySelectorAll<HTMLElement>(
         "main a[href], main button:not([disabled]), main input:not([disabled])",
