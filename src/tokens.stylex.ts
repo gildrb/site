@@ -158,25 +158,25 @@ export const typeScale = stylex.defineConsts({
  * <html> and in `theme-color` before any CSS loads, so the first frame and the browser chrome are
  * the page itself.
  */
-export const pageColor = { dark: "oklch(15.5% 0.013 55)", light: "oklch(99.5% 0.004 85)" };
+export const pageColor = { dark: "oklch(11% 0.022 29)", light: "oklch(100% 0 0)" };
 
 /**
- * The forge's palette, sampled from Batoni's "Vulcan" (1750) and Flaxman's gilt Shield of
- * Achilles (1817): umber shadow, bronze half-light, ivory where the fire catches. Measured in
- * OKLCH, the paintings' shadows (L 15 to 25%) carry chroma 0.027 to 0.036 at hue 36 to 75, and
- * the hue climbs with the light, from ember red in the dark (hue 40) to gilt yellow in the
- * highlights (hue 90). A grey with a trace of one hue reads as dirt, not warmth.
+ * The forge's palette, after Jouvenet's "Forge of Vulcan": a near-black room lit red by the fire.
+ * Measured in OKLCH, the painting's shadows (L 11 to 25%) carry chroma 0.02 to 0.04 at hue 29 to
+ * 33, and the hue climbs with the light, from ember red in the dark (hue 30) to gilt yellow in
+ * the highlights (hue 70 to 90).
  *
- * So each ladder ramps both ways at once, like firelight: the darker a color, the redder and the
- * more chromatic. Dark: an umber page (hue 55, chroma 0.013), bronze tertiary (hue 64, 0.042),
- * sand secondary (hue 72, 0.035), ivory text (hue 85, 0.02). Light: the same scale read from the
- * other end, ivory paper (hue 85, 0.004) under umber ink (hue 50 to 58, 0.018 to 0.036), held
- * lower than the dark ladder's chroma: on paper the same chroma reads as sepia.
+ * Dark is the painting: each ladder ramps like firelight, the darker a color, the redder and the
+ * more chromatic. A burnt near-black page (hue 29, chroma 0.022), ember quaternary (hue 42,
+ * 0.052), copper tertiary (hue 48, 0.045), sand secondary (hue 58, 0.038), ivory text (hue 72,
+ * 0.02). Light is the smith's drawing of it: graphite (chroma 0.003, hue 25) on white paper,
+ * and the fire only in `accent`. Any warmth in the light greys reads as yellowed, dirty paper,
+ * so they stay neutral and the ember carries the colour alone.
  *
- * The text ladder in APCA. Dark, on the page: primary Lc 97, secondary 63, tertiary 45 (WCAG
- * 6.5:1). Light: primary Lc 98, secondary 84, tertiary 73 (WCAG 5.5:1).
- * Light is not a mirror of dark: grey on a light page reads fainter than on a dark one, so the
- * light greys sit darker.
+ * The text ladder in WCAG. Dark, on the page: primary 17.7:1, secondary 10.2, tertiary 6.8,
+ * quaternary and accent 4.3. Light: primary 19.7:1, secondary 11.8, tertiary 7.4, quaternary
+ * 4.0, accent 6.3. Light is not a mirror of dark: grey on a light page reads fainter than on a
+ * dark one, so the light greys sit darker.
  */
 export const colors = stylex.defineVars({
   /**
@@ -185,30 +185,36 @@ export const colors = stylex.defineVars({
    */
   scheme: "light dark",
   bg: { default: pageColor.dark, [light]: pageColor.light },
-  primary: { default: "oklch(95% 0.02 85)", [light]: "oklch(21% 0.018 50)" },
-  secondary: { default: "oklch(78% 0.035 72)", [light]: "oklch(41% 0.03 55)" },
+  primary: { default: "oklch(95% 0.02 72)", [light]: "oklch(15% 0.003 25)" },
+  secondary: { default: "oklch(78% 0.038 58)", [light]: "oklch(34% 0.003 25)" },
   /**
-   * The bottom of the text ladder, a rung below tertiary in both themes: the labels themselves
-   * (About, Contact, Links, table headers), and the rows a lit row dims. Each theme sits at the
-   * same distance from its page, so hover reads alike in light and dark.
+   * The bottom of the text ladder, a rung below tertiary in both themes: the rows a lit row dims,
+   * and settings that are off. Each theme sits at the same distance from its page, so hover reads
+   * alike in light and dark.
    */
-  quaternary: { default: "oklch(56% 0.05 60)", [light]: "oklch(60% 0.03 60)" },
+  quaternary: { default: "oklch(56% 0.052 42)", [light]: "oklch(60% 0.003 25)" },
+  /**
+   * The labels themselves (About, Contact, Links, table headers) and the signature. Dark: the
+   * quaternary ember, so the labels stay on the ladder. Light: the fire on graphite, an ember red
+   * (hue 33, chroma 0.12), the one chromatic ink on the page.
+   */
+  accent: { default: "oklch(56% 0.052 42)", [light]: "oklch(50% 0.12 33)" },
   /** Dates, descriptors, quiet links at rest. */
-  tertiary: { default: "oklch(67% 0.042 64)", [light]: "oklch(50% 0.036 58)" },
+  tertiary: { default: "oklch(67% 0.045 48)", [light]: "oklch(45% 0.003 25)" },
   /**
-   * Rules: the tertiary ink (bronze over the umber page, sepia on paper) at a low alpha —
-   * Vercel's approach: a faint, transparent line that keeps the palette's hue instead of
-   * graying out, and takes whatever it sits under.
+   * Rules at a low alpha, Vercel's approach: a faint, transparent line that keeps the palette's
+   * hue and takes whatever it sits under. Dark: the copper tertiary over the burnt page. Light:
+   * the graphite primary, so a rule reads as drawn rather than tinted.
    */
-  hairline: { default: "oklch(67% 0.042 64 / 0.16)", [light]: "oklch(50% 0.036 58 / 0.18)" },
+  hairline: { default: "oklch(67% 0.045 48 / 0.16)", [light]: "oklch(15% 0.003 25 / 0.12)" },
   /**
    * The shell block's hairline as a gradient, after superlogical.com's prompt blocks: faint at
    * the top, strongest at the bottom, so the border fades downward and the panel reads as lit
    * from above. Same inks as `hairline`, spread over a quarter to a bit past its strength.
    */
-  edgeTop: { default: "oklch(67% 0.042 64 / 0.05)", [light]: "oklch(50% 0.036 58 / 0.06)" },
-  edgeBottom: { default: "oklch(67% 0.042 64 / 0.18)", [light]: "oklch(50% 0.036 58 / 0.25)" },
-  codeBg: { default: "oklch(21% 0.016 58)", [light]: "oklch(95% 0.018 82)" },
+  edgeTop: { default: "oklch(67% 0.045 48 / 0.05)", [light]: "oklch(15% 0.003 25 / 0.04)" },
+  edgeBottom: { default: "oklch(67% 0.045 48 / 0.18)", [light]: "oklch(15% 0.003 25 / 0.18)" },
+  codeBg: { default: "oklch(16.5% 0.026 31)", [light]: "oklch(97% 0.002 25)" },
   /**
    * Depth without shadows, from light (after raycast.com): a surface is lit from above. Its fill
    * runs from `surfaceTop` down to its own color, and `bevel`, a line of light, sits on its top
@@ -216,26 +222,26 @@ export const colors = stylex.defineVars({
    * one step brighter than its surface, with a brighter `keyBevel` on top and `keyBase`, a darker
    * line, under it, so it reads as raised. Nothing casts a shadow onto the page.
    */
-  surfaceTop: { default: "oklch(24% 0.017 60)", [light]: "oklch(97.5% 0.016 82)" },
+  surfaceTop: { default: "oklch(19.5% 0.028 32)", [light]: "oklch(98.5% 0.001 25)" },
   bevel: { default: "oklch(100% 0 0 / 0.07)", [light]: "oklch(100% 0 0 / 0.75)" },
-  key: { default: "oklch(27% 0.018 62)", [light]: "oklch(99% 0.008 85)" },
-  keyHover: { default: "oklch(31% 0.02 64)", [light]: "oklch(100% 0 0)" },
+  key: { default: "oklch(22% 0.03 33)", [light]: "oklch(99.6% 0 0)" },
+  keyHover: { default: "oklch(26% 0.032 35)", [light]: "oklch(100% 0 0)" },
   keyBevel: { default: "oklch(100% 0 0 / 0.13)", [light]: "oklch(100% 0 0)" },
-  keyBase: { default: "oklch(7% 0.012 50 / 0.55)", [light]: "oklch(21% 0.018 50 / 0.16)" },
-  terminalBg: { default: "oklch(18% 0.015 56)", [light]: "oklch(97.5% 0.015 84)" },
+  keyBase: { default: "oklch(5% 0.015 29 / 0.55)", [light]: "oklch(15% 0.003 25 / 0.16)" },
+  terminalBg: { default: "oklch(14% 0.024 30)", [light]: "oklch(98.5% 0.001 25)" },
   /**
    * Heph's glass window (`heph.tsx`), the one lifted surface on the site; flat surfaces take a
    * line (`ui.edge`), not a shadow. `glass` is the terminal colour the wallpaper shows through:
    * 62% on the dark page, 82% on the light one, where a thinner pale tint over the dark painting
-   * mixes into grey-brown. `glint` is light caught on the glass, white in both themes: mixed from
+   * mixes into a muddy grey. `glint` is light caught on the glass, white in both themes: mixed from
    * the text it went near-black on the light page. `shadow` is the dark under the window, on
    * each theme's own hue rather than pure black, which reads as a hole in a tinted page.
    */
-  glass: { default: "oklch(18% 0.015 56 / 0.62)", [light]: "oklch(97.5% 0.015 84 / 0.82)" },
+  glass: { default: "oklch(14% 0.024 30 / 0.62)", [light]: "oklch(98.5% 0.001 25 / 0.82)" },
   glint: { default: "oklch(100% 0 0)", [light]: "oklch(100% 0 0)" },
-  shadow: { default: "oklch(7% 0.012 50)", [light]: "oklch(15% 0.02 50)" },
-  /** Muted text on terminal surfaces: 5.6:1 on the dark terminal, 5.2:1 on the light one. */
-  terminalMuted: { default: "oklch(64% 0.04 64)", [light]: "oklch(50% 0.036 58)" },
+  shadow: { default: "oklch(5% 0.015 29)", [light]: "oklch(12% 0.005 25)" },
+  /** Muted text on terminal surfaces: 5.9:1 on the dark terminal, 7.1:1 on the light one. */
+  terminalMuted: { default: "oklch(64% 0.045 48)", [light]: "oklch(45% 0.003 25)" },
   /**
    * How strong an underline is at rest, as a share of its link's text colour (`ui.outbound`); on
    * hover it is the full colour. Not a mirror, for the reason light prose is heavier: a thin light

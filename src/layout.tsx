@@ -156,7 +156,7 @@ export function Document({
         <style dangerouslySetInnerHTML={{ __html: themeCss }} />
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content={pageColor.dark} />
         <meta name="theme-color" media="(prefers-color-scheme: light)" content={pageColor.light} />
-        <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg?v=5" />
+        <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg?v=6" />
         <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: previewScript }} />
         {/* Hold the first paint until the whole page is parsed and aligned, so it never arrives
             in pieces or shifts. Preact's typings lack `blocking` on <link>, hence the spread. */}
@@ -463,12 +463,8 @@ const styles = stylex.create({
     // wide, then keeps that color after any tap, so the bar is only as wide as its text. It has
     // no background of its own: content passes behind it and the top bar follows the page. A
     // solid backing was tried: Safari draws the page under its translucent top bar, where no
-    // backing reaches, so content showed above it with a hard cut. Instead the letters carry a
-    // soft halo in the page's colour, so the trail stays legible over dark artwork, with no edge.
-    textShadow: {
-      default: null,
-      [media.mobile]: `0 0 1px ${colors.bg}, 0 0 6px ${colors.bg}, 0 0 14px ${colors.bg}`,
-    },
+    // backing reaches, so content showed above it with a hard cut. A halo in the page's colour
+    // behind the letters was tried too, and read as a drop shadow; the letters stand bare.
     width: { default: null, [media.mobile]: "fit-content" },
     maxWidth: { default: null, [media.mobile]: "100%" },
     // Phones: the bar's top padding takes the heading's baseline shift (`baseline.heading`, which

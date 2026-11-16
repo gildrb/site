@@ -83,10 +83,10 @@ const styles = stylex.create({
    * A shell block as a panel with depth, after superlogical.com's prompt blocks: the hairline is
    * a gradient border — near-transparent at the top, full hairline strength at the bottom, so it
    * fades downward — drawn as two backgrounds (the fill on `padding-box`, the edge on
-   * `border-box`) under a transparent 1px border. Under it, three tight layered shadows, one
-   * pixel-step each, seat the panel on the page without floating it. The border takes a pixel a
-   * side, so the insets give it back to keep the block's size. The copy button stays a
-   * transparent icon: the lines fade out (`fade.end`) before it, so no command runs beneath it.
+   * `border-box`) under a transparent 1px border. No shadow: the panel sits flat on the page, as
+   * every surface does. The border takes a pixel a side, so the insets give it back to keep the
+   * block's size. The copy button stays a transparent icon: the lines fade out (`fade.end`)
+   * before it, so no command runs beneath it.
    */
   block: {
     display: "grid",
@@ -101,8 +101,6 @@ const styles = stylex.create({
     borderWidth: "1px",
     borderStyle: "solid",
     borderColor: "transparent",
-    boxShadow:
-      "0 1px 1px oklch(0% 0 0 / 0.04), 0 2px 2px -1px oklch(0% 0 0 / 0.04), 0 4px 6px -3px oklch(0% 0 0 / 0.05)",
   },
   lines: {
     display: "grid",

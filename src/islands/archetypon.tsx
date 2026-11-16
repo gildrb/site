@@ -820,12 +820,12 @@ const styles = stylex.create({
     paddingBlock: { default: `0 ${space.portfolioRowPadding}`, [media.mobile]: space.touchInset },
     boxShadow: `inset 0 -1px ${colors.hairline}`,
     // The row's own colour would override the label's.
-    color: colors.quaternary,
+    color: colors.accent,
   },
-  /** A format that is off: its whole row and its dash go to the labels' dark brown. */
+  /** A format that is off: its whole row and its dash go to the dimmed rows' quaternary. */
   off: { color: colors.quaternary },
   end: { justifySelf: "end" },
-  /** A cell that does not apply to its format: a dark brown dash, nothing to fill in. */
+  /** A cell that does not apply to its format: a quaternary dash, nothing to fill in. */
   none: { color: colors.quaternary, userSelect: "none" },
   // White is picked, dark grey is not. Nothing else changes color, hover included, so the
   // color always means one thing.

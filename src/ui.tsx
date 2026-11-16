@@ -88,7 +88,7 @@ export const ui = stylex.create({
     fontWeight: typeScale.textWeight,
     lineHeight: space.linkLineHeight,
     letterSpacing: typeScale.labelTracking,
-    color: colors.quaternary,
+    color: colors.accent,
     position: "relative",
     top: baseline.label,
   },

@@ -129,7 +129,7 @@ function Page({ css }: { css: string }) {
         position: "relative",
         height: header + (groupIndex > 0 ? length(space.groupGap) - rowPadding : 0),
         paddingTop: groupIndex > 0 ? length(space.groupGap) - rowPadding : 0,
-        color: color(colors.quaternary),
+        color: color(colors.accent),
       }}
     >
       {group}
@@ -236,10 +236,10 @@ function Page({ css }: { css: string }) {
             gap: linkGap,
           }}
         >
-          <span style={{ ...text, color: color(colors.quaternary) }}>Contact</span>
+          <span style={{ ...text, color: color(colors.accent) }}>Contact</span>
           <span style={{ ...text, color: color(colors.tertiary) }}>{email}</span>
           {contacts.map(({ label }) => link(label))}
-          <span style={{ ...text, color: color(colors.quaternary), marginTop: pitch }}>Links</span>
+          <span style={{ ...text, color: color(colors.accent), marginTop: pitch }}>Links</span>
           {profiles.map(({ label }) => link(label))}
         </div>
         {/* The table on Contact's line: Projects, then Work. */}
