@@ -156,7 +156,7 @@ export function Document({
         <style dangerouslySetInnerHTML={{ __html: themeCss }} />
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content={pageColor.dark} />
         <meta name="theme-color" media="(prefers-color-scheme: light)" content={pageColor.light} />
-        <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg?v=6" />
+        <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.svg?v=7" />
         <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: previewScript }} />
         {/* Hold the first paint until the whole page is parsed and aligned, so it never arrives
             in pieces or shifts. Preact's typings lack `blocking` on <link>, hence the spread. */}
