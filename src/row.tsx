@@ -38,12 +38,7 @@ export function Row({ project, first, home }: { project: Project; first: boolean
       aria-describedby={`${id}-description`}
     >
       <Title
-        {...stylex.props(
-          ui.respondCell,
-          styles.cell,
-          styles.title,
-          project.external && ui.outbound,
-        )}
+        {...stylex.props(ui.respondCell, styles.cell, styles.title)}
         id={`${id}-title`}
         data-morph="row"
         {...untranslated}

@@ -393,28 +393,25 @@ const externals: readonly External[] = [
 ];
 
 /**
- * `external`: the row leaves Gil's own pages (underlined title). Products with a site of their
- * own are his pages too, so they read as subpages (no underline). `slug`: its page's
- * `src/content/<slug>.md`, where it has one here; null for projects that live elsewhere.
+ * A homepage row. Titles read alike wherever they lead; an arrow marks one that leaves
+ * gildrb.com (`row.tsx`). `slug`: its page's `src/content/<slug>.md`, where it has one here;
+ * null for projects that live elsewhere.
  */
-export type Project = Row & { href: string; external: boolean; slug: string | null };
+export type Project = Row & { href: string; slug: string | null };
 
 /**
  * Homepage rows: Projects first, then Work, each newest first. Software Gil maintains comes
  * before client work and studies, whatever their dates.
  */
 export const projects: readonly Project[] = [
-  ...cases
-    .filter((item) => item.listed)
-    .map((item) => ({ ...item, href: `/${item.slug}`, external: false })),
+  ...cases.filter((item) => item.listed).map((item) => ({ ...item, href: `/${item.slug}` })),
   ...products
     .filter((item) => item.listed)
     .map((item) => ({
       ...item,
       href: item.site.$ === "Built" ? `/${item.slug}` : productUrl(item),
-      external: false,
     })),
-  ...externals.map((item) => ({ ...item, external: true, slug: null })),
+  ...externals.map((item) => ({ ...item, slug: null })),
 ].toSorted(
   (left, right) =>
     groupRank(left.group) - groupRank(right.group) || right.date.localeCompare(left.date),

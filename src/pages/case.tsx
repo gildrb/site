@@ -229,10 +229,11 @@ export function CasePage({
 
 /**
  * The three projects after this one in the homepage's order, wrapping round to the newest;
- * external projects are left out. Products are not external, even with a site of their own.
+ * projects with no page of Gil's (`slug` null) are left out. Products with a site of their own
+ * stay.
  */
 function next(href: string): Project[] {
-  const own = projects.filter((project) => !project.external);
+  const own = projects.filter((project) => project.slug !== null);
   const at = own.findIndex((project) => project.href === href);
   return [1, 2, 3]
     .map((step) => own[(at + step) % own.length])
