@@ -21,3 +21,7 @@ https://www.gildrb.com/* https://gildrb.com/:splat 301
 /work.html /
 /index/filen /filen 301
 /index/filen/ /filen 301
+/elpis https://github.com/gildrb/elpis 301
+/elpis/ https://github.com/gildrb/elpis 301
+/elpis.html https://github.com/gildrb/elpis 301
+/elpis.md https://github.com/gildrb/elpis 301

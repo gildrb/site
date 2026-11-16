@@ -10,8 +10,7 @@ What that looks like:
 
 - [Eukhe](https://eukhe.com/): eukhe.com, Neovim in the browser on a core with proven laws.
 - [Archetypon](/archetypon): an SVG export tool, interface and engine, in the browser. No upload.
-- [Elpis](/elpis): the fastest 4-bit Qwen3.8-27B on one RTX 3090.
-- [Porthmeus](/porthmeus): one command, one private HTTPS link to a dev server.
+- [Elpis](https://github.com/gildrb/elpis): the fastest 4-bit Qwen3.8-27B on one RTX 3090.
 
 Before that: brand and website for Introspectum as the designer on its founding team, and brand, type and identity work for clients, shipped. Each project on the [homepage](/) has a page on what I made and how; the [archive](/all) shows all of it at once.
 

@@ -189,21 +189,6 @@ export const cases: readonly Case[] = [
     ogImage: "gil-rodrigues-heph-answer-1600.webp",
   },
   {
-    slug: "elpis",
-    listed: true,
-    date: "2026-09-03",
-    title: "Elpis",
-    name: "Elpis",
-    headline: "Elpis: the fastest 4-bit Qwen3.8-27B on one RTX 3090",
-    descriptor: "Local LLM inference",
-    group: { $: "Projects", platform: "Linux, RTX 3090" },
-    repository: "https://github.com/gildrb/elpis",
-    links: [],
-    description: "Fastest 4-bit Qwen3.8-27B on one RTX 3090.",
-    ogDescription:
-      "Qwen3.8-27B on one RTX 3090: 1,221 tok/s prefill, 126 tok/s decode, 262K context, every speedup gated on quality.",
-  },
-  {
     slug: "filen",
     listed: false,
     date: "2026-01-14",
@@ -288,6 +273,8 @@ export type Product = Row & {
   /** Old slugs; `gildrb.com/<former>` redirects to the product's page. */
   formerSlugs: readonly string[];
   name: string;
+  /** Has a row in the homepage table; false: its page stays, reached by link and alias only. */
+  listed: boolean;
   /**
    * Hosts that redirect to the product's page (`worker/products.ts`): `/install` to its
    * installer path on a built page, any other path to the page; an own site keeps the path.
@@ -321,6 +308,7 @@ export const products: readonly Product[] = [
     date: "2026-10-05",
     title: "Eukhe",
     name: "Eukhe",
+    listed: true,
     descriptor: "Coding agent",
     group: { $: "Projects", platform: "macOS, Linux" },
     links: [],
@@ -343,6 +331,7 @@ export const products: readonly Product[] = [
     date: "2026-09-26",
     title: "Archetypon",
     name: "Archetypon",
+    listed: true,
     descriptor: "SVG asset converter",
     group: { $: "Projects", platform: "Browser" },
     links: [],
@@ -362,6 +351,7 @@ export const products: readonly Product[] = [
     date: "2026-09-02",
     title: "Porthmeus",
     name: "Porthmeus",
+    listed: false,
     descriptor: "Remote dev servers",
     group: { $: "Projects", platform: "macOS, Linux" },
     links: [],
@@ -389,7 +379,18 @@ export function productUrl(product: Product): string {
 }
 
 /** Projects that live elsewhere: their rows link out instead of to a case study. */
-const externals: readonly External[] = [];
+const externals: readonly External[] = [
+  {
+    href: "https://github.com/gildrb/elpis",
+    date: "2026-09-03",
+    title: "Elpis",
+    descriptor: "Local LLM inference",
+    group: { $: "Projects", platform: "Linux, RTX 3090" },
+    repository: "https://github.com/gildrb/elpis",
+    links: [],
+    description: "Fastest 4-bit Qwen3.8-27B on one RTX 3090.",
+  },
+];
 
 /**
  * `external`: the row leaves Gil's own pages (underlined title). Products with a site of their
@@ -406,11 +407,13 @@ export const projects: readonly Project[] = [
   ...cases
     .filter((item) => item.listed)
     .map((item) => ({ ...item, href: `/${item.slug}`, external: false })),
-  ...products.map((item) => ({
-    ...item,
-    href: item.site.$ === "Built" ? `/${item.slug}` : productUrl(item),
-    external: false,
-  })),
+  ...products
+    .filter((item) => item.listed)
+    .map((item) => ({
+      ...item,
+      href: item.site.$ === "Built" ? `/${item.slug}` : productUrl(item),
+      external: false,
+    })),
   ...externals.map((item) => ({ ...item, external: true, slug: null })),
 ].toSorted(
   (left, right) =>
