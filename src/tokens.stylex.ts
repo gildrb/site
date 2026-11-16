@@ -214,7 +214,12 @@ export const colors = stylex.defineVars({
    */
   edgeTop: { default: "oklch(67% 0.045 48 / 0.05)", [light]: "oklch(15% 0.003 25 / 0.04)" },
   edgeBottom: { default: "oklch(67% 0.045 48 / 0.18)", [light]: "oklch(15% 0.003 25 / 0.18)" },
-  codeBg: { default: "oklch(16.5% 0.026 31)", [light]: "oklch(97% 0.002 25)" },
+  /**
+   * Dark surfaces (code, keys, terminal) take the copper tertiary's hue (48 to 54) at a fifth of
+   * its chroma, not the page's red: the page's chroma at hue 29, lifted to a panel's lightness,
+   * reads as a red slab beside copper and ivory ink.
+   */
+  codeBg: { default: "oklch(16.5% 0.012 48)", [light]: "oklch(97% 0.002 25)" },
   /**
    * Depth without shadows, from light (after raycast.com): a surface is lit from above. Its fill
    * runs from `surfaceTop` down to its own color, and `bevel`, a line of light, sits on its top
@@ -222,13 +227,13 @@ export const colors = stylex.defineVars({
    * one step brighter than its surface, with a brighter `keyBevel` on top and `keyBase`, a darker
    * line, under it, so it reads as raised. Nothing casts a shadow onto the page.
    */
-  surfaceTop: { default: "oklch(19.5% 0.028 32)", [light]: "oklch(98.5% 0.001 25)" },
+  surfaceTop: { default: "oklch(19.5% 0.014 50)", [light]: "oklch(98.5% 0.001 25)" },
   bevel: { default: "oklch(100% 0 0 / 0.07)", [light]: "oklch(100% 0 0 / 0.75)" },
-  key: { default: "oklch(22% 0.03 33)", [light]: "oklch(99.6% 0 0)" },
-  keyHover: { default: "oklch(26% 0.032 35)", [light]: "oklch(100% 0 0)" },
+  key: { default: "oklch(22% 0.015 52)", [light]: "oklch(99.6% 0 0)" },
+  keyHover: { default: "oklch(26% 0.016 54)", [light]: "oklch(100% 0 0)" },
   keyBevel: { default: "oklch(100% 0 0 / 0.13)", [light]: "oklch(100% 0 0)" },
-  keyBase: { default: "oklch(5% 0.015 29 / 0.55)", [light]: "oklch(15% 0.003 25 / 0.16)" },
-  terminalBg: { default: "oklch(14% 0.024 30)", [light]: "oklch(98.5% 0.001 25)" },
+  keyBase: { default: "oklch(5% 0.008 48 / 0.55)", [light]: "oklch(15% 0.003 25 / 0.16)" },
+  terminalBg: { default: "oklch(14% 0.011 46)", [light]: "oklch(98.5% 0.001 25)" },
   /**
    * Heph's glass window (`heph.tsx`), the one lifted surface on the site; flat surfaces take a
    * line (`ui.edge`), not a shadow. `glass` is the terminal colour the wallpaper shows through:
@@ -237,10 +242,10 @@ export const colors = stylex.defineVars({
    * the text it went near-black on the light page. `shadow` is the dark under the window, on
    * each theme's own hue rather than pure black, which reads as a hole in a tinted page.
    */
-  glass: { default: "oklch(14% 0.024 30 / 0.62)", [light]: "oklch(98.5% 0.001 25 / 0.82)" },
+  glass: { default: "oklch(14% 0.011 46 / 0.62)", [light]: "oklch(98.5% 0.001 25 / 0.82)" },
   glint: { default: "oklch(100% 0 0)", [light]: "oklch(100% 0 0)" },
   shadow: { default: "oklch(5% 0.015 29)", [light]: "oklch(12% 0.005 25)" },
-  /** Muted text on terminal surfaces: 5.9:1 on the dark terminal, 7.1:1 on the light one. */
+  /** Muted text on terminal surfaces: 5.8:1 on the dark terminal, 7.1:1 on the light one. */
   terminalMuted: { default: "oklch(64% 0.045 48)", [light]: "oklch(45% 0.003 25)" },
   /**
    * How strong an underline is at rest, as a share of its link's text colour (`ui.outbound`); on
