@@ -6,6 +6,13 @@ const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const onScreen = new Set<HTMLVideoElement>();
 
 function update(video: HTMLVideoElement) {
+  // While a navigation morph runs (`settle.ts`), its trip keeps the frames; the recording
+  // starts when it lands.
+  const root = document.documentElement;
+  if (root.dataset.morph !== undefined) {
+    root.addEventListener("morphdone", () => update(video), { once: true });
+    return;
+  }
   if (onScreen.has(video) && !reducedMotion.matches) {
     // Browsers may refuse to play (data saver, low power); the poster then simply stays.
     video.play().catch(() => video.pause());

@@ -46,6 +46,10 @@ export const morphCss = [
   "::view-transition-group(page-title),::view-transition-group(page-image){animation-duration:var(--morph-duration);animation-timing-function:var(--morph-easing)}",
   // Clipped to the artwork's corner (`ui.artCorner`), so the picture never travels as a rectangle.
   `::view-transition-group(page-image){overflow:clip;border-radius:calc(2 * ${space.radius});corner-shape:squircle}`,
+  // The title's two snapshots default to stretching over the travelling box, and the row's
+  // 16px text then sits a half-line off the page's 22px text: the cross-fade shows both, a
+  // ghosted double. At their own height, centred in the line, the two coincide.
+  "::view-transition-old(page-title),::view-transition-new(page-title){height:auto;top:50%;translate:0 -50%}",
   "::view-transition-old(page-image),::view-transition-new(page-image){width:100%;height:100%;object-fit:cover;object-position:top;mix-blend-mode:normal}",
   "::view-transition-old(page-image){animation:var(--morph-image) var(--morph-fade-easing) both morph-blur-out}",
   "::view-transition-new(page-image){animation:var(--morph-image) var(--morph-fade-easing) both morph-blur-in}",
@@ -353,6 +357,8 @@ function morphTransitions(
     root.style.setProperty("--morph-image", `${Math.min(config.image, duration)}ms`);
     const done = () => {
       clear();
+      // The page's own work (islands, recordings) waited out the trip (`settle.ts`); it starts now.
+      root.dispatchEvent(new CustomEvent("morphdone"));
       // The picture is back in its frame; it leaves as a preview does when no row is lit.
       if (!landed) return;
       const picture = landed;

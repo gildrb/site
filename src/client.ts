@@ -9,6 +9,7 @@ import { enableKeys } from "./keys.ts";
 import { enablePreview } from "./preview.ts";
 import { autoplayVideos } from "./video.ts";
 import { enableZoom } from "./zoom.ts";
+import { morphSettled } from "./settle.ts";
 
 enableZoom();
 autoplayVideos();
@@ -113,13 +114,16 @@ const nearViewport = new IntersectionObserver(
   { rootMargin: "50%" },
 );
 
-requestAnimationFrame(() => {
-  for (const element of document.querySelectorAll<HTMLElement>("[data-island]")) {
-    // Island wrappers are `display: contents` and have no box to observe; watch their content.
-    const content = element.firstElementChild;
-    if (element.dataset.island === "heph" && content) nearViewport.observe(content);
-    else setTimeout(() => hydrateIsland(element));
-  }
+// After the navigation morph (`settle.ts`): the trip needs the frames hydration would take.
+void morphSettled().then(() => {
+  requestAnimationFrame(() => {
+    for (const element of document.querySelectorAll<HTMLElement>("[data-island]")) {
+      // Island wrappers are `display: contents` and have no box to observe; watch their content.
+      const content = element.firstElementChild;
+      if (element.dataset.island === "heph" && content) nearViewport.observe(content);
+      else setTimeout(() => hydrateIsland(element));
+    }
+  });
 });
 
 // The first alignment already ran inline before the first paint; keep it current afterwards.
