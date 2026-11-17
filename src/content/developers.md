@@ -1,6 +1,6 @@
 # gildrb.com developer resources
 
-Everything here is public and read-only. There is nothing to register for, no key, and no `Authorization` header to send; see [auth.md](/auth.md).
+Everything here is public and read-only and answers anonymous requests; see [auth.md](/auth.md).
 
 ## Markdown
 
@@ -17,10 +17,6 @@ Errors use `application/problem+json`. See [api-docs.md](/api-docs.md), [openapi
 ## MCP
 
 `POST https://gildrb.com/mcp` is a read-only MCP server (Streamable HTTP) with two tools, `list_portfolio_pages` and `get_portfolio_page`. Its manifest is at [/.well-known/mcp](/.well-known/mcp) and its server card at [/.well-known/mcp/server-card.json](/.well-known/mcp/server-card.json).
-
-## CLI
-
-There is no CLI tool; scripts should use the API or the MCP server above.
 
 ## Source
 

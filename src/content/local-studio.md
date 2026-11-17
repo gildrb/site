@@ -4,9 +4,9 @@
 
 ## The brief
 
-Brand, website and app for Local Studio, private AI that runs on your Mac.
+Brand, website and app for Local Studio, private AI that runs on a Mac.
 
-Local Studio runs AI models on your Mac. It needed a brand and a website.
+Local Studio runs AI models on a Mac. It needed a brand and a website.
 
 ## The website
 

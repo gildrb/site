@@ -1,6 +1,6 @@
 # Contact Gil Rodrigues (gildrb)
 
-The best way to reach me is by email at [g@gildrb.com](mailto:g@gildrb.com). Clicking the address on the homepage copies it to your clipboard.
+I answer email first: [g@gildrb.com](mailto:g@gildrb.com). Clicking the address on the homepage copies it.
 
 I'm also on [Signal](https://signal.me/#eu/KlFnTOEoXJTxUNhl9y4U4-QzunoZj6eX2BrkGYibTNUmKw8OszhNgaKd-aoseeUZ) and [X](https://x.com/gildrb_).
 

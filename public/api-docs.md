@@ -1,6 +1,6 @@
 # gildrb.com public API
 
-Public, read-only information about gildrb.com. No registration or authentication is needed.
+Public, read-only information about gildrb.com. Every endpoint answers anonymous requests.
 
 ## Endpoints
 
@@ -15,7 +15,7 @@ Versioned endpoints live under `/api/v1/` and every response carries `X-API-Vers
 
 ## Rate limits
 
-Responses advertise `RateLimit-Limit: 60` and `RateLimit-Policy: 60;w=60`. Please stay within that; a request over the limit may receive `429 Too Many Requests` with a `Retry-After` header.
+Responses advertise `RateLimit-Limit: 60` and `RateLimit-Policy: 60;w=60`. A request over the limit may receive `429 Too Many Requests` with a `Retry-After` header.
 
 ## Errors
 

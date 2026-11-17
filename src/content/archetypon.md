@@ -12,7 +12,7 @@ A logo needs favicons, app icons, PNG for slides, PDF for print and WebP for the
 
 ## Every file at once
 
-Drop the SVG on this page and download one ZIP. It holds optimized SVG, PNG, WebP and JPEG from 16 to 4096 pixels, one ICO favicon with many sizes, and a vector PDF. If the SVG has text, add its font files. Archetypon runs on your device, in WebAssembly, and uploads nothing.
+Drop the SVG on this page and download one ZIP. It holds optimized SVG, PNG, WebP and JPEG from 16 to 4096 pixels, one ICO favicon with many sizes, and a vector PDF. If the SVG has text, add its font files. Archetypon runs on the device, in WebAssembly, and uploads nothing.
 
 ## Command line
 
