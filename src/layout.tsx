@@ -50,6 +50,12 @@ const globalCss = [
   // and never shifts when it becomes scrollable. The site's own scrollbar takes its place
   // (`scrollbar.ts`), and without JavaScript the page still scrolls by wheel, touch and keys.
   "html{scrollbar-width:none}html::-webkit-scrollbar{display:none}",
+  // Touch devices: a solid strip in the page colour at each edge, 5px of it on screen, which Safari
+  // samples to paint its status bar and toolbar (joshpuckett.me/seamless-mobile-safari). Pages
+  // that scroll whole add a 48px fade above it, so content passes under the bars without a hard
+  // cut; the homepage's list has its own fades. Below the zoomed artwork (z 1000) and the name
+  // bar (z 100), which stand over it.
+  `@media (hover:none){[data-edge]{position:fixed;left:0;right:0;z-index:90;pointer-events:none}[data-edge]::after{content:"";position:fixed;left:0;right:0;height:12px;background:${colors.bg}}[data-edge=top]::after{top:-7px}[data-edge=bottom]::after{bottom:-7px}[data-edge][data-fade]::before{content:"";position:fixed;left:0;right:0;height:48px}[data-edge=top][data-fade]::before{top:5px;background:linear-gradient(to bottom,${colors.bg},transparent)}[data-edge=bottom][data-fade]::before{bottom:5px;background:linear-gradient(to top,${colors.bg},transparent)}}`,
   `::selection{color:${colors.bg};background:${colors.primary}}`,
   // A touch shows nothing: no grey tap flash, and no press state takes its place.
   "a,button{-webkit-tap-highlight-color:transparent}",
@@ -201,6 +207,9 @@ export function Document({
         {/* Align the layout before the first paint (see the render-blocking `expect` in <head>),
             and start the scrollbar, so scrolling on arrival finds it. */}
         <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: bodyScript }} />
+        {/* Touch Safari tints its status bar and toolbar from a fixed strip at each edge. */}
+        <div data-edge="top" data-fade={home ? undefined : ""} aria-hidden="true" />
+        <div data-edge="bottom" data-fade={home ? undefined : ""} aria-hidden="true" />
         <div id="aligned" hidden />
       </body>
     </html>
