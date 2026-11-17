@@ -58,6 +58,8 @@ export function enablePreview(): void {
   let hovered: Element | null = null;
   let focused: Element | null = null;
   let current: Picture | undefined;
+  /** The row whose picture shows: the next row's place against it sets the slide's direction. */
+  let currentRow: Element | null = null;
 
   const place = () => {
     const frame = previewFrame(area.getBoundingClientRect(), previewGrid);
@@ -77,11 +79,13 @@ export function enablePreview(): void {
       : null;
     const picture = pictures.get(row?.getAttribute("href") ?? "");
     const shown = picture !== undefined && fits && ready.has(picture);
-    if (shown && picture !== current) {
-      current?.box.removeAttribute("data-current");
+    if (shown && row !== null && picture !== current) {
+      const side = entrySide(currentRow, row, area.hasAttribute("data-shown"));
+      if (current) leave(current.box, side);
       current?.animate?.(false);
+      enter(picture.box, side);
       current = picture;
-      picture.box.setAttribute("data-current", "");
+      currentRow = row;
     }
     area.toggleAttribute("data-shown", shown);
     if (shown) current?.animate?.(true);
@@ -195,6 +199,72 @@ function isStill(value: unknown): value is Still {
 function rowOf(target: EventTarget | null, list: HTMLElement): Element | null {
   const row = target instanceof Element ? target.closest("a[href]") : null;
   return row && list.contains(row) ? row : null;
+}
+
+/** Where a picture comes in from: the side of the table its row lies on, past the last one's. */
+type Side = "Above" | "Below" | "InPlace";
+
+/**
+ * A row further down brings its picture up from below, one further up brings it down from
+ * above; the first picture after the frame was empty stands in place, as the frame fades in.
+ */
+function entrySide(previous: Element | null, next: Element, frameShown: boolean): Side {
+  if (!frameShown || previous === null || previous === next) return "InPlace";
+  return previous.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING
+    ? "Below"
+    : "Above";
+}
+
+function sideAttribute(side: Side): string | null {
+  switch (side) {
+    case "Above":
+      return "above";
+    case "Below":
+      return "below";
+    case "InPlace":
+      return null;
+    default: {
+      const unknown: never = side;
+      return unknown;
+    }
+  }
+}
+
+/** Puts a picture at its entry side at once, then lets it travel to the frame. */
+function enter(box: HTMLElement, side: Side): void {
+  const attribute = sideAttribute(side);
+  box.setAttribute("data-instant", "");
+  if (attribute === null) box.removeAttribute("data-side");
+  else box.setAttribute("data-side", attribute);
+  // Commits the start position before the transition back to the frame begins.
+  void box.offsetWidth;
+  box.removeAttribute("data-instant");
+  // The side's offset and the frame's position share a specificity: the side must go to land.
+  box.removeAttribute("data-side");
+  box.setAttribute("data-current", "");
+}
+
+/** The outgoing picture leaves the way the incoming one travels: towards the opposite side. */
+function leave(box: HTMLElement, incoming: Side): void {
+  const attribute = sideAttribute(opposite(incoming));
+  if (attribute === null) box.removeAttribute("data-side");
+  else box.setAttribute("data-side", attribute);
+  box.removeAttribute("data-current");
+}
+
+function opposite(side: Side): Side {
+  switch (side) {
+    case "Above":
+      return "Below";
+    case "Below":
+      return "Above";
+    case "InPlace":
+      return "InPlace";
+    default: {
+      const unknown: never = side;
+      return unknown;
+    }
+  }
 }
 
 /** Whether an image decodes: ready to paint at once, or broken. */
@@ -357,13 +427,29 @@ function edgeColor(image: HTMLImageElement): string | null {
 }
 
 const styles = stylex.create({
-  /** One picture in the shared frame; only the current one shows, swapped at once. */
+  /**
+   * One picture in the shared frame. The current one stands in it; the others wait 40px off it,
+   * slightly smaller and blurred, on the side they leave by or come in from (`data-side`). Moving
+   * between rows slides the pictures with the table's direction; reduced motion only fades.
+   */
   preview: {
     position: "absolute",
     left: 0,
     width: 0,
     height: 0,
     opacity: { default: 0, ":is([data-current])": 1 },
+    transform: {
+      default: "scale(.96)",
+      ":is([data-side=below])": "translateY(40px) scale(.96)",
+      ":is([data-side=above])": "translateY(-40px) scale(.96)",
+      ":is([data-current])": "none",
+      "@media (prefers-reduced-motion: reduce)": "none",
+    },
+    filter: { default: "blur(8px)", ":is([data-current])": "none" },
+    transitionProperty: "opacity, transform, filter",
+    transitionDuration: { default: "260ms, 560ms, 320ms", ":is([data-instant])": "0s" },
+    // Transform on a spring-like overshoot: the picture lands a touch past the frame and settles.
+    transitionTimingFunction: "ease-out, cubic-bezier(.34,1.36,.64,1), ease-out",
   },
   /**
    * Fills the frame, cropped to it rather than shrunk: screenshots keep their top, where a
