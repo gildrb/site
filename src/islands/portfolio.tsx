@@ -265,7 +265,8 @@ const styles = stylex.create({
     gridColumn: "1 / -1",
     gridTemplateColumns: "subgrid",
     alignItems: "baseline",
-    paddingBlock: { default: space.touchInset, [media.desktop]: space.portfolioRowPadding },
+    // Phones: the rows' two-line cell, a unit above and below (`row.tsx`).
+    paddingBlock: { default: space.unit, [media.desktop]: space.portfolioRowPadding },
     boxShadow: `inset 0 1px ${colors.hairline}`,
     color: colors.primary,
     textDecoration: "none",
@@ -275,10 +276,13 @@ const styles = stylex.create({
     outlineOffset: space.focusOffset,
     borderRadius: { default: null, ":focus-visible": `calc(${space.radius} / 2)` },
   },
-  /** Dim until the footer is hovered, focused or selected (`keys.ts`), as a row's subject. */
+  /**
+   * Dim until the footer is hovered, focused or selected (`keys.ts`), as a row's subject. Phones:
+   * under the title across the row, as the rows' descriptors.
+   */
   more: {
-    gridColumn: 2,
-    justifySelf: { default: null, [media.mobile]: "end" },
+    gridColumn: { default: 2, [media.mobile]: "1 / -1" },
+    gridRow: { default: 1, [media.mobile]: 2 },
     color: {
       default: colors.tertiary,
       [media.hover]: { [stylex.when.ancestor(":hover", listMarker)]: colors.quaternary },
@@ -295,11 +299,12 @@ const styles = stylex.create({
   },
   /**
    * The years the archive covers, in the date column, set right as the rows' dates are; dim
-   * until the footer is lit, as `more` is. Phones keep the count alone.
+   * until the footer is lit, as `more` is. Phones: beside the title, as the rows' dates.
    */
   span: {
-    display: { default: "block", [media.mobile]: "none" },
-    gridColumn: 3,
+    display: "block",
+    gridColumn: { default: 3, [media.mobile]: 2 },
+    gridRow: 1,
     justifySelf: "end",
     whiteSpace: "nowrap",
     color: {
