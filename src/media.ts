@@ -191,13 +191,6 @@ export const media: Readonly<Record<string, Media>> = {
     width: 1600,
     height: 1004,
   },
-  "heph-lockup": {
-    alt: "Heph symbol and wordmark",
-    archive: true,
-    width: 3023,
-    height: 860,
-    mark: "start",
-  },
   "heph-typeface-early": {
     alt: "Early Heph typeface drawing in Glyphs with the lowercase g selected",
     width: 1600,

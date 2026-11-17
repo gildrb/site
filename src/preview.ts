@@ -295,7 +295,7 @@ function still({ src, srcset }: Still, box: HTMLElement, className: string): HTM
  */
 async function fill(picture: Picture): Promise<boolean> {
   const { box, data } = picture;
-  const className = stylex.props(ui.edge, styles.picture).className ?? "";
+  const className = stylex.props(ui.edge, ui.artCorner, styles.picture).className ?? "";
   switch (data.$) {
     case "Image": {
       const image = still(data, box, className);
@@ -339,7 +339,8 @@ async function fill(picture: Picture): Promise<boolean> {
       // Stacked in the frame, one showing at a time, in an order shuffled for each visit. A picture
       // joins the cycle once decoded, so none shows half-loaded; the first decoded makes the row
       // ready.
-      const stacked = stylex.props(ui.edge, styles.picture, styles.stacked).className ?? "";
+      const stacked =
+        stylex.props(ui.edge, ui.artCorner, styles.picture, styles.stacked).className ?? "";
       const images = shuffled(data.highlights).map((each) => {
         const image = still(each, box, stacked);
         box.append(image);

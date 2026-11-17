@@ -1,5 +1,5 @@
 import { previewFrame, previewGrid } from "./preview-frame.ts";
-import { colors } from "./tokens.stylex.ts";
+import { colors, space } from "./tokens.stylex.ts";
 
 /**
  * A project's title and picture travel between the homepage table and its page, as opencode.ai's
@@ -44,7 +44,8 @@ export const morphCss = [
   ":root[data-morph]::view-transition-old(root){animation:none;mix-blend-mode:normal}",
   ":root[data-morph]::view-transition-new(root){animation:var(--morph-fade) var(--morph-fade-easing) var(--morph-delay) both morph-in;mix-blend-mode:normal}",
   "::view-transition-group(page-title),::view-transition-group(page-image){animation-duration:var(--morph-duration);animation-timing-function:var(--morph-easing)}",
-  "::view-transition-group(page-image){overflow:clip}",
+  // Clipped to the artwork's corner (`ui.artCorner`), so the picture never travels as a rectangle.
+  `::view-transition-group(page-image){overflow:clip;border-radius:calc(2 * ${space.radius});corner-shape:squircle}`,
   "::view-transition-old(page-image),::view-transition-new(page-image){width:100%;height:100%;object-fit:cover;object-position:top;mix-blend-mode:normal}",
   "::view-transition-old(page-image){animation:var(--morph-image) var(--morph-fade-easing) both morph-blur-out}",
   "::view-transition-new(page-image){animation:var(--morph-image) var(--morph-fade-easing) both morph-blur-in}",

@@ -49,6 +49,15 @@ export const ui = stylex.create({
     outlineOffset: "-1px",
   },
   /**
+   * Artwork's corner: a squircle (`corner-shape`), curvature continuous where the straight edge
+   * meets the turn. A squircle reads tighter than a round corner of the same radius, so it takes
+   * two `radius` to look as round as the code surfaces. Browsers without `corner-shape` round it.
+   */
+  artCorner: {
+    borderRadius: `calc(2 * ${space.radius})`,
+    cornerShape: "squircle",
+  },
+  /**
    * The code surface: inline code, code blocks, the shell block. One quiet step off the page
    * (`colors.codeBg`), no gloss: Vercel's panels are a fill and a line, not a lit box. The
    * surface corner (`space.radius`); the border is the `edge` beside it.

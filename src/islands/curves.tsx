@@ -254,7 +254,7 @@ export function Specimen({
   return (
     <div
       ref={frame}
-      {...stylex.props(styles.frame, fill && styles.fill, cover && styles.coverFrame)}
+      {...stylex.props(ui.artCorner, styles.frame, fill && styles.fill, cover && styles.coverFrame)}
     >
       <style
         dangerouslySetInnerHTML={{
@@ -380,6 +380,8 @@ const styles = stylex.create({
       content: '""',
       position: "absolute",
       inset: 0,
+      borderRadius: "inherit",
+      cornerShape: "inherit",
       boxShadow: `inset 0 0 0 1px ${colors.hairline}`,
       pointerEvents: "none",
     },

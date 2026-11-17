@@ -18,10 +18,8 @@ Now each answer quotes its evidence, and Heph checks each quote against its pass
 
 ## The typeface
 
-I drew a typeface for Heph in Glyphs, and a symbol to go with it.
+I drew a typeface for Heph in Glyphs.
 
 ![](media:heph-typeface-early)
 
 ![](media:heph-typeface-refinement)
-
-![](media:heph-lockup)

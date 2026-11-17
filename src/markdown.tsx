@@ -150,6 +150,7 @@ function Image({
       <img
         {...stylex.props(
           !item.mark && ui.edge,
+          !item.mark && ui.artCorner,
           styles.image,
           item.mark ? styles.markOnGrid : styles.onGrid,
           item.mark && styles.markImage,
@@ -185,7 +186,7 @@ function Video({ id, fill }: { id: string; fill: boolean }) {
       data-zoom
     >
       <video
-        {...stylex.props(ui.edge, styles.image, styles.onGrid, fill && styles.cover)}
+        {...stylex.props(ui.edge, ui.artCorner, styles.image, styles.onGrid, fill && styles.cover)}
         style={{ "--ratio": String(item.height / item.width) }}
         width={item.width}
         height={item.height}
@@ -253,6 +254,7 @@ function Figures({
           {...stylex.props(
             styles.figure,
             banner && styles.window,
+            banner && ui.artCorner,
             // The demos draw their own frame, rounded with them on small screens.
             banner && !demos.has(id) && styles.frame,
           )}
@@ -691,6 +693,8 @@ export const styles = stylex.create({
       content: '""',
       position: "absolute",
       inset: 0,
+      borderRadius: "inherit",
+      cornerShape: "inherit",
       boxShadow: `inset 0 0 0 1px ${colors.hairline}`,
       pointerEvents: "none",
     },

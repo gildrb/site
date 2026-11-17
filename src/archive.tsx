@@ -105,7 +105,7 @@ function Tile({ work, load }: { work: Work; load: Load }) {
   const { src, srcset } = sources(work.id);
   const art = item.video ? (
     <video
-      {...stylex.props(ui.edge, styles.art)}
+      {...stylex.props(ui.edge, ui.artCorner, styles.art)}
       width={item.width}
       height={item.height}
       poster={src}
@@ -119,7 +119,12 @@ function Tile({ work, load }: { work: Work; load: Load }) {
     />
   ) : (
     <img
-      {...stylex.props(!item.mark && ui.edge, styles.art, item.mark && styles.mark)}
+      {...stylex.props(
+        !item.mark && ui.edge,
+        !item.mark && ui.artCorner,
+        styles.art,
+        item.mark && styles.mark,
+      )}
       alt={item.alt}
       width={item.width}
       height={item.height}
