@@ -234,12 +234,11 @@ export const ui = stylex.create({
     },
   },
   /**
-   * Tabular digits at the density of the words beside them. Inter centres each tabular figure in
-   * a cell as wide as its widest digit (1328 of 2048 units), and even its proportional digits
-   * sit looser than its letters. Every gap in a date is brought to the mean ink-to-ink gap
-   * between the letters of the table (229.8 units), measured from the outlines at weight 400
-   * across every date from 2000 to 2099, with the letters untracked. The text's tracking is then
-   * added, as it is to every letter gap, so a date stays at the density of its row.
+   * Tabular digits at the density of the words beside them. Allo's tabular figures sit in cells
+   * 1293 of 2048 units wide, looser than its letters. Every gap in a date is brought to the mean
+   * ink-to-ink gap between the letters of the table (212.3 units), measured across every year
+   * from 2000 to 2099. The text's tracking is then added, as it is to every letter gap, so a
+   * date stays at the density of its row.
    */
   figures: {
     fontVariantNumeric: "tabular-nums",
@@ -250,6 +249,11 @@ export const ui = stylex.create({
     marginInlineStart: `calc(${figureUnits.beforeHyphen} / ${figureUnits.unitsPerEm} * 1em)`,
     marginInlineEnd: `calc(${figureUnits.afterHyphen} / ${figureUnits.unitsPerEm} * 1em)`,
   },
+  /** A range's en dash (`2018–2026`), its gaps matched as the hyphen's are. */
+  rangeDash: {
+    marginInlineStart: `calc(${figureUnits.beforeDash} / ${figureUnits.unitsPerEm} * 1em)`,
+    marginInlineEnd: `calc(${figureUnits.afterDash} / ${figureUnits.unitsPerEm} * 1em)`,
+  },
 });
 
 /** The signature ("© 2026 Gil Rodrigues"), on a label's line. */
@@ -258,19 +262,21 @@ export function Signature({ style }: { style: Style }) {
 }
 
 /**
- * Sets an ISO date (`2026-09-08`, `2026-09`) in steady columns: tabular digits, proportional
- * hyphens. Only the digits take `tnum`, since Inter's tabular set also widens the hyphen to a
- * digit's width; the spacing is corrected so the date reads at the density of its row.
+ * Sets an ISO date (`2026-09-08`, `2026-09`) or a range of years (`2018–2026`) in steady
+ * columns: tabular digits, proportional hyphens and dashes. Only the digits take `tnum`; the
+ * spacing is corrected so the figures read at the density of their row.
  */
 export function Figures({ text }: { text: string }) {
   return (
     <>
       {text
-        .split(/(\d+|-)/)
+        .split(/(\d+|-|–)/)
         .filter((part) => part !== "")
         .map((part) =>
           part === "-" ? (
             <span {...stylex.props(ui.separator)}>-</span>
+          ) : part === "–" ? (
+            <span {...stylex.props(ui.rangeDash)}>–</span>
           ) : /^\d+$/.test(part) ? (
             <span {...stylex.props(ui.figures)}>{part}</span>
           ) : (

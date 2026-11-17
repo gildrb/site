@@ -47,19 +47,27 @@ export const media = stylex.defineConsts({
 });
 
 /**
- * How dates are spaced, in Inter's font units (see `ui.figures`). The page sets them as CSS; the
- * share image (`og.tsx`) draws its dates from the same numbers.
+ * How dates are spaced, in Allo's font units (see `ui.figures`), measured with HarfBuzz at weight
+ * 400 with the page's features (`kern`, `liga`, `calt`, `case`): every gap is brought to the mean
+ * ink-to-ink gap between the table's letters (212.3 units).
  */
 export const figureUnits = stylex.defineConsts({
   unitsPerEm: "2048",
   /** Every tabular digit's advance. */
-  tabular: "1328",
+  tabular: "1293",
   /** Digit to digit. */
-  digit: "-95.1",
+  digit: "-85.1",
   /** Digit to hyphen, after the digit's own tracking. */
-  beforeHyphen: "17",
+  beforeHyphen: "13.7",
   /** Hyphen to digit. */
-  afterHyphen: "-88.2",
+  afterHyphen: "-102.7",
+  /**
+   * Digit to a range's en dash, after the digit's own tracking. Allo's en dash has almost no
+   * sidebearings (it joins in a row of dashes), so both sides are opened to the letter gap.
+   */
+  beforeDash: "155.7",
+  /** En dash to digit. */
+  afterDash: "59.3",
 });
 
 /**
