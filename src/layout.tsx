@@ -50,14 +50,6 @@ const globalCss = [
   // and never shifts when it becomes scrollable. The site's own scrollbar takes its place
   // (`scrollbar.ts`), and without JavaScript the page still scrolls by wheel, touch and keys.
   "html{scrollbar-width:none}html::-webkit-scrollbar{display:none}",
-  // Touch devices: a solid strip at each edge, as tall as the safe area (at least 12px), which
-  // Safari samples to paint its status bar and toolbar (joshpuckett.me/seamless-mobile-safari).
-  // The page has one colour that never changes on scroll; the strips, <html> and the
-  // `theme-color` tags all take it, and the scheme's media query switches them together. No fade
-  // beside the strips: on a phone it reads as a vignette under the status bar. Below the zoomed
-  // artwork (z 1000) and the name bar (z 100), which stand over it.
-  `:root{--edge-top-background:${colors.bg};--edge-bottom-background:${colors.bg}}`,
-  `@media (hover:none){.edge-top,.edge-bottom{position:fixed;left:0;right:0;z-index:90;pointer-events:none}.edge-top::after,.edge-bottom::after{content:"";position:fixed;left:0;right:0}.edge-top::after{top:0;height:max(12px,env(safe-area-inset-top));background:var(--edge-top-background)}.edge-bottom::after{bottom:0;height:max(12px,env(safe-area-inset-bottom));background:var(--edge-bottom-background)}}`,
   `::selection{color:${colors.bg};background:${colors.primary}}`,
   // A touch shows nothing: no grey tap flash, and no press state takes its place.
   "a,button{-webkit-tap-highlight-color:transparent}",
@@ -209,9 +201,6 @@ export function Document({
         {/* Align the layout before the first paint (see the render-blocking `expect` in <head>),
             and start the scrollbar, so scrolling on arrival finds it. */}
         <script data-cfasync="false" dangerouslySetInnerHTML={{ __html: bodyScript }} />
-        {/* Touch Safari tints its status bar and toolbar from a fixed strip at each edge. */}
-        <div class="edge-top" aria-hidden="true" />
-        <div class="edge-bottom" aria-hidden="true" />
         <div id="aligned" hidden />
       </body>
     </html>
