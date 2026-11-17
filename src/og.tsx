@@ -209,7 +209,7 @@ function Page({ css }: { css: string }) {
         padding: `${inset}px ${inset}px 0`,
         backgroundColor: color(colors.bg),
         color: color(colors.primary),
-        fontFamily: "Inter",
+        fontFamily: "Allo",
       }}
     >
       {/* The name alone on the first row, in the page's heading size at weight 400, the share
@@ -257,8 +257,8 @@ function Page({ css }: { css: string }) {
 const variationTables = new Set(["fvar", "gvar", "avar", "HVAR", "MVAR", "STAT"]);
 
 /**
- * The font without its variation tables: its default instance, Inter at weight 400 and optical
- * size 14, which is the page's text weight. Satori's font parser cannot read variable fonts.
+ * The font without its variation tables: its default instance, Allo at weight 400, which is the
+ * page's text weight. Satori's font parser cannot read variable fonts.
  */
 function defaultInstance(font: Uint8Array): Buffer {
   const source = Buffer.from(font);
@@ -292,8 +292,8 @@ function defaultInstance(font: Uint8Array): Buffer {
 }
 
 export async function ogImage(css: string): Promise<Uint8Array> {
-  // Inter with the page's case forms built in (scripts/inter.py), since satori cannot turn them on.
-  const font = defaultInstance(await decompress(readFileSync("src/fonts/inter-share.woff2")));
+  // Allo with the page's case forms built in (scripts/allo.py), since satori cannot turn them on.
+  const font = defaultInstance(await decompress(readFileSync("src/fonts/allo-share.woff2")));
   const token = tokens(css);
   // The page's own width: the layout plus its inset on both sides; the height follows the frame.
   const width =
@@ -304,7 +304,7 @@ export async function ogImage(css: string): Promise<Uint8Array> {
   const svg = await satori(<Page css={css} />, {
     width,
     height: (width * shareFrame.height) / shareFrame.width,
-    fonts: [{ name: "Inter", data: font, weight: 400, style: "normal" }],
+    fonts: [{ name: "Allo", data: font, weight: 400, style: "normal" }],
   });
   return new Resvg(svg, {
     fitTo: { mode: "width", value: shareFrame.width },

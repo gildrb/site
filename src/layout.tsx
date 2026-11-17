@@ -25,25 +25,25 @@ export type Assets = {
   shareImage: string;
 };
 
-// Each face is subset to exactly its range, so declare it to the browser. Inter
+// Each face is subset to exactly its range, so declare it to the browser. Allo
 // also carries Latin Extended-A, for names such as Bēhance; the monospace face does not need it.
 const monoRanges =
   "U+0020-007E,U+00A0-00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2010-205E,U+20AC,U+2122,U+2190-21FF,U+2212,U+2500-257F";
-const interRanges = `${monoRanges},U+0100-017F`;
+const alloRanges = `${monoRanges},U+0100-017F`;
 
 // One URL per face, shared by its @font-face and its preload so the browser fetches it once.
-const interUrl = versioned("/fonts/inter.woff2");
-const monoUrl = versioned("/fonts/commit-mono.woff2");
+const alloUrl = versioned("/fonts/allo.woff2");
+const monoUrl = versioned("/fonts/paper-mono.woff2");
 
 /** The few rules StyleX cannot attach to an element, layered beneath StyleX's own layers. */
 const globalCss = [
   "@layer reset;",
-  `@font-face{font-family:"Inter";font-weight:380 600;font-display:swap;src:url("${interUrl}") format("woff2");unicode-range:${interRanges}}`,
-  `@font-face{font-family:"Commit Mono";font-weight:400;font-display:optional;src:url("${monoUrl}") format("woff2");unicode-range:${monoRanges}}`,
-  // Arial (or metric-identical Liberation Sans) scaled to Inter's metrics, so text laid out
+  `@font-face{font-family:"Allo";font-weight:380 600;font-display:swap;src:url("${alloUrl}") format("woff2");unicode-range:${alloRanges}}`,
+  `@font-face{font-family:"Paper Mono";font-weight:400;font-display:optional;src:url("${monoUrl}") format("woff2");unicode-range:${monoRanges}}`,
+  // Arial (or metric-identical Liberation Sans) scaled to Allo's metrics, so text laid out
   // before the web font arrives does not move when it does.
-  '@font-face{font-family:"Inter Fallback";src:local("Arial"),local("Liberation Sans");size-adjust:107.35%;ascent-override:90.24%;descent-override:22.47%;line-gap-override:0%}',
-  // Headings take their weight from their styles, never the browser's bold: Inter stops at 600,
+  '@font-face{font-family:"Allo Fallback";src:local("Arial"),local("Liberation Sans");size-adjust:105.32%;ascent-override:91.98%;descent-override:22.9%;line-gap-override:0%}',
+  // Headings take their weight from their styles, never the browser's bold: Allo stops at 600,
   // so a heading left bold, even a hidden one, would be drawn in a faked weight.
   "@layer reset{*{margin:0;padding:0;box-sizing:border-box}h1,h2,h3,h4,h5,h6{font-weight:inherit}}",
   // The browser's own scrollbar never shows, in any frame: the page keeps one width everywhere
@@ -163,7 +163,7 @@ export function Document({
         <link rel="expect" href="#aligned" {...{ blocking: "render" }} />
         {head}
         <title>{title}</title>
-        <link rel="preload" href={interUrl} as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href={alloUrl} as="font" type="font/woff2" crossOrigin="anonymous" />
         {mono && (
           <link rel="preload" href={monoUrl} as="font" type="font/woff2" crossOrigin="anonymous" />
         )}
@@ -324,7 +324,7 @@ const styles = stylex.create({
    */
   fixedViewport: { height: "100dvh", overflow: "hidden" },
   body: {
-    // Held hidden by the font gate until Inter is ready; see `fontGate`.
+    // Held hidden by the font gate until Allo is ready; see `fontGate`.
     visibility: "var(--first-paint, visible)",
     // No background: the canvas's comes from <html>, and the grid (`grid.ts`) lies under the
     // body's paint, so any fill here would cover it.

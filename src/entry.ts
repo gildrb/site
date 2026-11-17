@@ -9,10 +9,10 @@ export const zoomDuration = 200;
 
 /**
  * Runs in every page's `<head>`, right after the stylesheet: on the first page of a visit, until
- * Inter has loaded, the page stays hidden, so the first frame is always the intended one (browsers
+ * Allo has loaded, the page stays hidden, so the first frame is always the intended one (browsers
  * keep the previous page on screen meanwhile). Capped at one second so a slow or blocked font
- * never hangs the page; the metric-matched fallback then shows and swaps to Inter once it arrives.
- * Later pages of the visit have Inter in the cache and are never hidden: hiding them, even for a
+ * never hangs the page; the metric-matched fallback then shows and swaps to Allo once it arrives.
+ * Later pages of the visit have Allo in the cache and are never hidden: hiding them, even for a
  * frame, blanks the sidebar between two pages. Without JavaScript nothing is held.
  */
-export const fontGate = `const r=document.documentElement;const inter=[...document.fonts].find(f=>f.family.replace(/"/g,"")==="Inter");let seen=false;try{seen=sessionStorage.getItem("gildrb:inter")==="1"}catch{}if(inter&&inter.status!=="loaded"&&!seen){r.style.setProperty("--first-paint","hidden");const go=()=>{window.__align?.();r.style.removeProperty("--first-paint")};inter.load().then(go,go);setTimeout(go,1000)}if(inter)inter.load().then(()=>{try{sessionStorage.setItem("gildrb:inter","1")}catch{}},()=>{})`;
+export const fontGate = `const r=document.documentElement;const face=[...document.fonts].find(f=>f.family.replace(/"/g,"")==="Allo");let seen=false;try{seen=sessionStorage.getItem("gildrb:font")==="1"}catch{}if(face&&face.status!=="loaded"&&!seen){r.style.setProperty("--first-paint","hidden");const go=()=>{window.__align?.();r.style.removeProperty("--first-paint")};face.load().then(go,go);setTimeout(go,1000)}if(face)face.load().then(()=>{try{sessionStorage.setItem("gildrb:font","1")}catch{}},()=>{})`;

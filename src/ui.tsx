@@ -25,10 +25,9 @@ export const untranslated: Readonly<Record<string, string>> = { translate: "no" 
 
 export const ui = stylex.create({
   sans: {
-    fontFamily:
-      'Inter, "Inter Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: 'Allo, "Allo Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   },
-  mono: { fontFamily: '"Commit Mono", "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace' },
+  mono: { fontFamily: '"Paper Mono", "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace' },
   focusRing: {
     outline: { default: null, ":focus-visible": `1px solid ${colors.primary}` },
     outlineOffset: space.focusOffset,

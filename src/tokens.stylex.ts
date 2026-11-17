@@ -125,7 +125,7 @@ export const motion = stylex.defineConsts({
  * letters tracked this way (`ui.figures` adds `textTracking`).
  *
  * Weights: 400 is text; 500 is emphasis, the step Inter's optical size keeps clearly apart from
- * 400 at every size here (the font file carries 380 to 600, see `scripts/inter.py`). Nothing is
+ * 400 at every size here (the font file carries 380 to 600, see `scripts/allo.py`). Nothing is
  * bolder (on a dark page 600 blooms) and nothing lighter than 400 (Rauno Freiberg's floor,
  * github.com/raunofreiberg/interfaces). The share image (`og.tsx`) draws from a 400-only instance.
  */
