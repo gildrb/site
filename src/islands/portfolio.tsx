@@ -7,6 +7,10 @@ import { Figures, Signature, ui } from "../ui.tsx";
 import { Links } from "../links.tsx";
 import { Email } from "./email.tsx";
 
+// The years the archive's work was made. Most archive pieces carry no date in `media.ts`, so the
+// span is stated here rather than derived from the dated cases.
+const archiveSpan = "2018–2026";
+
 /**
  * The homepage table: Projects, then Work, each under a label in the header's place. The second
  * label stands two row pitches below the last row, keeping the 40px rhythm the sidebar aligns
@@ -89,6 +93,9 @@ export function Portfolio({ more }: { more: number }) {
                   </span>
                   <span {...stylex.props(ui.respondCell, styles.more)}>
                     <Figures text={String(more)} /> more
+                  </span>
+                  <span {...stylex.props(ui.respondCell, styles.span)}>
+                    <Figures text={archiveSpan} />
                   </span>
                 </a>
               )}
@@ -272,6 +279,29 @@ const styles = stylex.create({
   more: {
     gridColumn: 2,
     justifySelf: { default: null, [media.mobile]: "end" },
+    color: {
+      default: colors.tertiary,
+      [media.hover]: { [stylex.when.ancestor(":hover", listMarker)]: colors.quaternary },
+      [stylex.when.ancestor(":hover", rowMarker)]: {
+        [media.hover]: { [stylex.when.ancestor(":hover", listMarker)]: colors.primary },
+      },
+      [stylex.when.ancestor(":focus-visible", rowMarker)]: {
+        [media.hover]: { [stylex.when.ancestor(":hover", listMarker)]: colors.primary },
+      },
+      [stylex.when.ancestor("[data-selected]", rowMarker)]: {
+        [media.hover]: { [stylex.when.ancestor(":hover", listMarker)]: colors.primary },
+      },
+    },
+  },
+  /**
+   * The years the archive covers, in the date column, set right as the rows' dates are; dim
+   * until the footer is lit, as `more` is. Phones keep the count alone.
+   */
+  span: {
+    display: { default: "block", [media.mobile]: "none" },
+    gridColumn: 3,
+    justifySelf: "end",
+    whiteSpace: "nowrap",
     color: {
       default: colors.tertiary,
       [media.hover]: { [stylex.when.ancestor(":hover", listMarker)]: colors.quaternary },
