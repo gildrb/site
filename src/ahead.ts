@@ -24,9 +24,8 @@ function pageUrl(target: EventTarget | null): URL | null {
 }
 
 async function loadAhead(url: URL): Promise<void> {
-  const key = url.pathname;
-  if (fetched.has(key)) return;
-  fetched.add(key);
+  if (fetched.has(url.pathname)) return;
+  fetched.add(url.pathname);
   const response = await fetch(url, { headers: { Accept: "text/html" } });
   if (!response.ok) return;
   const page = new DOMParser().parseFromString(await response.text(), "text/html");
@@ -35,12 +34,12 @@ async function loadAhead(url: URL): Promise<void> {
     // Same srcset and sizes in the same window: the browser picks the file the page will use.
     const image = new Image();
     if (element instanceof HTMLImageElement) {
-      if (element.sizes !== "") image.sizes = element.sizes;
-      if (element.srcset !== "") image.srcset = element.getAttribute("srcset") ?? "";
-      image.src = element.getAttribute("src") ?? "";
-    } else if (element instanceof HTMLVideoElement && element.getAttribute("poster")) {
-      image.src = element.getAttribute("poster") ?? "";
-    } else continue;
+      image.sizes = element.sizes;
+      image.srcset = element.srcset;
+      image.src = element.src;
+    } else if (element instanceof HTMLVideoElement && element.poster !== "") {
+      image.src = element.poster;
+    }
     // Decoded too, so the first frame of the next page has it ready; a failure only loses that.
     image.decode().catch(() => undefined);
   }
