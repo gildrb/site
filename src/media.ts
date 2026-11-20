@@ -77,8 +77,8 @@ export const media: Readonly<Record<string, Media>> = {
   "local-studio-tour": {
     alt: "Screen recording of the Local Studio website: the hero, the app interface, the setup prompt for coding models and the phone screens",
     archive: true,
-    width: 1080,
-    height: 1014,
+    width: 720,
+    height: 676,
     video: true,
   },
   "ben-davis-construction": {
