@@ -235,6 +235,35 @@ export function sources(id: string): { src: string; srcset?: string } {
   return { src, srcset };
 }
 
+/** The live demos: each figure's component and the props that do not depend on the page. */
+const demoIslands: Record<string, (fill: boolean, sizes: string) => ComponentChildren> = {
+  "heph-demo": (fill, sizes) => (
+    <Island
+      name="heph"
+      component={Terminal}
+      props={{ fill, wallpaper: { ...sources("heph-forge"), sizes } }}
+    />
+  ),
+  "curves-demo": (fill) => (
+    <Island
+      name="curves"
+      component={Specimen}
+      props={{ fill, cover: false, font: versioned("/fonts/curves.woff2"), running: true }}
+    />
+  ),
+  "ben-davis-demo": (fill) => (
+    <Island
+      name="ben-davis"
+      component={Fold}
+      props={{
+        fill,
+        player: versioned("/ben-davis/lottie.min.js"),
+        animation: versioned("/ben-davis/ben-davis-hover.json"),
+      }}
+    />
+  ),
+};
+
 function Figures({
   items,
   eager,
@@ -261,41 +290,12 @@ function Figures({
           // The homepage previews this picture; it travels with the title (`morph.ts`).
           data-lead={id === lead || undefined}
         >
-          {id === "heph-demo" ? (
-            <Island
-              name="heph"
-              component={Terminal}
-              props={{
-                fill: banner,
-                wallpaper: { ...sources("heph-forge"), sizes: sizesFor(grid) },
-              }}
-            />
-          ) : id === "curves-demo" ? (
-            <Island
-              name="curves"
-              component={Specimen}
-              props={{
-                fill: banner,
-                cover: false,
-                font: versioned("/fonts/curves.woff2"),
-                running: true,
-              }}
-            />
-          ) : id === "ben-davis-demo" ? (
-            <Island
-              name="ben-davis"
-              component={Fold}
-              props={{
-                fill: banner,
-                player: versioned("/ben-davis/lottie.min.js"),
-                animation: versioned("/ben-davis/ben-davis-hover.json"),
-              }}
-            />
-          ) : media[id]?.video ? (
-            <Video id={id} fill={banner} />
-          ) : (
-            <Image id={id} sizes={sizesFor(grid)} eager={eager && index === 0} fill={banner} />
-          )}
+          {demoIslands[id]?.(banner, sizesFor(grid)) ??
+            (media[id]?.video ? (
+              <Video id={id} fill={banner} />
+            ) : (
+              <Image id={id} sizes={sizesFor(grid)} eager={eager && index === 0} fill={banner} />
+            ))}
           {caption && (
             <figcaption {...stylex.props(styles.small, styles.caption)}>
               <Inline text={caption} />
