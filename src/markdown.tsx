@@ -118,6 +118,40 @@ function Inline({ text }: { text: string }) {
 
 const images = readdirSync("public/images/optimized");
 
+/** The button each figure's media sits in; `zoom.ts` enlarges it on click where there is room. */
+function Zoom({
+  id,
+  fill,
+  mark,
+  children,
+}: {
+  id: string;
+  fill: boolean;
+  mark: boolean;
+  children: (item: (typeof media)[string]) => ComponentChildren;
+}) {
+  const item = media[id];
+  if (!item) throw new Error(`Unknown media id: ${id}`);
+  return (
+    <button
+      type="button"
+      {...stylex.props(
+        ui.reset,
+        ui.focusRing,
+        styles.zoom,
+        mark && item.mark && styles.mark,
+        mark && item.mark === "center" && styles.centered,
+        fill && styles.fill,
+      )}
+      aria-label={`Enlarge: ${item.alt}`}
+      aria-expanded="false"
+      data-zoom
+    >
+      {children(item)}
+    </button>
+  );
+}
+
 function Image({
   id,
   sizes,
@@ -129,43 +163,32 @@ function Image({
   eager: boolean;
   fill: boolean;
 }) {
-  const item = media[id];
-  if (!item) throw new Error(`Unknown media id: ${id}`);
-  const { src, srcset } = sources(id);
   return (
-    <button
-      type="button"
-      {...stylex.props(
-        ui.reset,
-        ui.focusRing,
-        styles.zoom,
-        item.mark && styles.mark,
-        item.mark === "center" && styles.centered,
-        fill && styles.fill,
-      )}
-      aria-label={`Enlarge: ${item.alt}`}
-      aria-expanded="false"
-      data-zoom
-    >
-      <img
-        {...stylex.props(
-          !item.mark && ui.edge,
-          !item.mark && ui.artCorner,
-          styles.image,
-          item.mark ? styles.markOnGrid : styles.onGrid,
-          item.mark && styles.markImage,
-          fill && (item.mark ? styles.contain : styles.cover),
-        )}
-        style={{ "--ratio": String(item.height / item.width) }}
-        alt={item.alt}
-        width={item.width}
-        height={item.height}
-        decoding="async"
-        {...(eager ? { fetchpriority: "high" } : { loading: "lazy" })}
-        src={src}
-        {...(srcset && { srcset, sizes })}
-      />
-    </button>
+    <Zoom id={id} fill={fill} mark>
+      {(item) => {
+        const { src, srcset } = sources(id);
+        return (
+          <img
+            {...stylex.props(
+              !item.mark && ui.edge,
+              !item.mark && ui.artCorner,
+              styles.image,
+              item.mark ? styles.markOnGrid : styles.onGrid,
+              item.mark && styles.markImage,
+              fill && (item.mark ? styles.contain : styles.cover),
+            )}
+            style={{ "--ratio": String(item.height / item.width) }}
+            alt={item.alt}
+            width={item.width}
+            height={item.height}
+            decoding="async"
+            {...(eager ? { fetchpriority: "high" } : { loading: "lazy" })}
+            src={src}
+            {...(srcset && { srcset, sizes })}
+          />
+        );
+      }}
+    </Zoom>
   );
 }
 
@@ -175,31 +198,31 @@ function Image({
  * from the same moment.
  */
 function Video({ id, fill }: { id: string; fill: boolean }) {
-  const item = media[id];
-  if (!item) throw new Error(`Unknown media id: ${id}`);
   return (
-    <button
-      type="button"
-      {...stylex.props(ui.reset, ui.focusRing, styles.zoom, fill && styles.fill)}
-      aria-label={`Enlarge: ${item.alt}`}
-      aria-expanded="false"
-      data-zoom
-    >
-      <video
-        {...stylex.props(ui.edge, ui.artCorner, styles.image, styles.onGrid, fill && styles.cover)}
-        style={{ "--ratio": String(item.height / item.width) }}
-        width={item.width}
-        height={item.height}
-        poster={sources(id).src}
-        src={versioned(`/videos/gil-rodrigues-${id}.mp4`)}
-        muted
-        loop
-        playsInline
-        preload="none"
-        aria-label={item.alt}
-        data-autoplay
-      />
-    </button>
+    <Zoom id={id} fill={fill} mark={false}>
+      {(item) => (
+        <video
+          {...stylex.props(
+            ui.edge,
+            ui.artCorner,
+            styles.image,
+            styles.onGrid,
+            fill && styles.cover,
+          )}
+          style={{ "--ratio": String(item.height / item.width) }}
+          width={item.width}
+          height={item.height}
+          poster={sources(id).src}
+          src={versioned(`/videos/gil-rodrigues-${id}.mp4`)}
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-label={item.alt}
+          data-autoplay
+        />
+      )}
+    </Zoom>
   );
 }
 
