@@ -486,7 +486,7 @@ export function Article({
   const opening = blocks.findIndex((block) => block.type === "p");
   const nodes: ComponentChildren[] = [];
   let previous: Kind | null = null;
-  let pendingTool = tool;
+  let pendingTool: ComponentChildren | null = tool;
   const place = (
     kind: Kind,
     render: (
@@ -499,7 +499,7 @@ export function Article({
     previous = kind;
   };
   const placeTool = () => {
-    if (pendingTool === null || pendingTool === undefined) return;
+    if (pendingTool === null) return;
     const content = pendingTool;
     pendingTool = null;
     place("figure", (spacing) => <div {...stylex.props(spacing)}>{content}</div>);
