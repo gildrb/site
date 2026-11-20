@@ -79,6 +79,7 @@ export function parse(markdown: string): { title: string; blocks: Block[] } {
       const text: string[] = [];
       for (; /^(?!#|```|- |!\[)./.test(lines[index] ?? ""); index += 1)
         text.push(lines[index] ?? "");
+      if (text.length === 0) throw new Error(`Case Markdown cannot parse the line: ${line}`);
       blocks.push({ type: "p", text: text.join(" ") });
     }
   }
