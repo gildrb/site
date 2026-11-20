@@ -154,7 +154,7 @@ function Zoom({
 }
 
 /** The props an image and a recording share: their ratio, size, and the classes on the grid. */
-function gridMedia(item: (typeof media)[string], fill: boolean, mark: boolean) {
+function gridMedia(item: (typeof media)[string], fill: boolean, mark = false) {
   return {
     ...stylex.props(
       ...(mark
