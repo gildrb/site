@@ -153,6 +153,20 @@ function Zoom({
   );
 }
 
+/** The props an image and a recording share: their ratio, size, and the classes on the grid. */
+function gridMedia(item: (typeof media)[string], fill: boolean, mark: boolean) {
+  return {
+    ...stylex.props(
+      ...(mark
+        ? [styles.image, styles.markOnGrid, styles.markImage, fill && styles.contain]
+        : [ui.edge, ui.artCorner, styles.image, styles.onGrid, fill && styles.cover]),
+    ),
+    style: { "--ratio": String(item.height / item.width) },
+    width: item.width,
+    height: item.height,
+  };
+}
+
 function Image({
   id,
   sizes,
@@ -170,18 +184,8 @@ function Image({
         const { src, srcset } = sources(id);
         return (
           <img
-            {...stylex.props(
-              !item.mark && ui.edge,
-              !item.mark && ui.artCorner,
-              styles.image,
-              item.mark ? styles.markOnGrid : styles.onGrid,
-              item.mark && styles.markImage,
-              fill && (item.mark ? styles.contain : styles.cover),
-            )}
-            style={{ "--ratio": String(item.height / item.width) }}
+            {...gridMedia(item, fill, Boolean(item.mark))}
             alt={item.alt}
-            width={item.width}
-            height={item.height}
             decoding="async"
             {...(eager ? { fetchpriority: "high" } : { loading: "lazy" })}
             src={src}
@@ -203,16 +207,7 @@ function Video({ id, fill }: { id: string; fill: boolean }) {
     <Zoom id={id} fill={fill} mark={false}>
       {(item) => (
         <video
-          {...stylex.props(
-            ui.edge,
-            ui.artCorner,
-            styles.image,
-            styles.onGrid,
-            fill && styles.cover,
-          )}
-          style={{ "--ratio": String(item.height / item.width) }}
-          width={item.width}
-          height={item.height}
+          {...gridMedia(item, fill)}
           poster={sources(id).src}
           src={versioned(`/videos/gil-rodrigues-${id}.mp4`)}
           muted
