@@ -333,6 +333,24 @@ function Figures({
 
 type Token = [kind: keyof typeof tokenStyles | null, text: string];
 
+/** Each token's shape and its tint; `null` marks the tokens the loop's statements classify. */
+const tokenRules: readonly (readonly [RegExp, Token[0]])[] = [
+  [/^#[^\n]*/, "comment"],
+  [/^"(?:\\.|[^"\\])*"|^'(?:\\.|[^'\\])*'/, "string"],
+  [/^\s+/, null],
+  [/^-?(?:\d+(?:\.\d+)?|\.\d+)[a-zA-Z]*/, "number"],
+  [/^[a-zA-Z_][\w.-]*/, null],
+];
+
+/** The token at `rest`'s start: the first matching rule, else an unterminated string or a char. */
+function tokenAt(rest: string): [string, Token[0]] {
+  for (const [pattern, kind] of tokenRules) {
+    const text = pattern.exec(rest)?.[0];
+    if (text !== undefined) return [text, kind];
+  }
+  return /^["']/.test(rest) ? [rest, "string"] : [rest.charAt(0), null];
+}
+
 /** Tokenizes TOML well enough to tint keys, strings, numbers, comments and punctuation. */
 function toml(source: string): Token[] {
   const tokens: Token[] = [];
@@ -341,17 +359,7 @@ function toml(source: string): Token[] {
   let valueContext = false;
   let lineStart = true;
   for (let rest = source; rest;) {
-    const [text = "", kind]: [string | undefined, Token[0]] = rest.startsWith("#")
-      ? [rest.match(/^[^\n]*/)?.[0], "comment"]
-      : /^["']/.test(rest)
-        ? [rest.match(/^("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/)?.[0] ?? rest, "string"]
-        : /^\s/.test(rest)
-          ? [rest.match(/^\s+/)?.[0], null]
-          : /^-?(?:\d|\.\d)/.test(rest)
-            ? [rest.match(/^-?(?:\d+(?:\.\d+)?|\.\d+)[a-zA-Z]*/)?.[0], "number"]
-            : /^[a-zA-Z_]/.test(rest)
-              ? [rest.match(/^[a-zA-Z_][\w.-]*/)?.[0], null]
-              : [rest.charAt(0), null];
+    const [text, kind] = tokenAt(rest);
     let tokenKind: Token[0] = kind;
     if (!kind && /^[a-zA-Z_]/.test(text)) {
       const next = rest.slice(text.length).match(/^\s*([=.\]])/)?.[1];
