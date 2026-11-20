@@ -217,7 +217,7 @@ export const cases: readonly Case[] = [
     description:
       "Pixel wordmark for Jordan “n0thing” Gilbert: typewriter study, exports and animation.",
     ogDescription: "Pixel wordmark for n0thing: typewriter study, exports and animation.",
-    ogImage: "gil-rodrigues-n0thing-wordmark-animation-1280.gif",
+    ogImage: "gil-rodrigues-n0thing-wordmark-animation-960.webp",
   },
   {
     slug: "curves",

@@ -252,6 +252,7 @@ export const media: Readonly<Record<string, Media>> = {
   "n0thing-wordmark-animation": {
     alt: "Animated medium-gray n0thing pixel wordmark on black with a blinking underscore",
     archive: true,
+    video: true,
     width: 1280,
     height: 720,
   },
@@ -459,6 +460,7 @@ export const media: Readonly<Record<string, Media>> = {
   "archive-corebeam-animation": {
     alt: "Animated Corebeam Industries mark: two blocks open into the wordmark and close again",
     archive: true,
+    video: true,
     width: 1280,
     height: 720,
   },
